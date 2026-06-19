@@ -1,0 +1,96 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.exception.BusinessException
+ *  javax.validation.constraints.Min
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.exception.BusinessException;
+import java.io.Serializable;
+import javax.validation.constraints.Min;
+
+@DtoInfo(value="\u5206\u9875\u4fe1\u606f")
+public class PageInfo
+implements Serializable {
+    private static final long serialVersionUID = 873231846401397493L;
+    @DtoAttribute(value="\u5f53\u524d\u9875\u6570", example="1")
+    @Min(value=1L)
+    private @Min(value=1L) int pageNumber = 1;
+    @DtoAttribute(value="\u6bcf\u9875\u8bb0\u5f55\u6570", example="20")
+    @Min(value=1L)
+    private @Min(value=1L) int pageSize = 20;
+    @DtoAttribute(value="\u603b\u9875\u6570")
+    private int pages;
+    @DtoAttribute(value="\u603b\u8bb0\u5f55\u6570")
+    private int total;
+    @DtoAttribute(value="\u662f\u5426\u9700\u8981\u67e5\u8be2\u603b\u8bb0\u5f55\u6570", example="false")
+    private boolean needTotal = false;
+    private boolean needMore = false;
+
+    public int getPageSize() {
+        if (this.pageSize > 1000) {
+            if (this.needMore) {
+                if (this.pageSize > 3000) {
+                    throw new BusinessException("BOOT_4008").addError("pageSize\u8bbe\u7f6e\u4e0d\u5141\u8bb8\u8d85\u8fc73000");
+                }
+            } else {
+                throw new BusinessException("BOOT_4008").addError("pageSize\u8bbe\u7f6e\u4e0d\u5141\u8bb8\u8d85\u8fc71000");
+            }
+        }
+        return this.pageSize;
+    }
+
+    public String toString() {
+        return "PageInfo{pageNumber=" + this.pageNumber + ", pageSize=" + this.pageSize + ", pages=" + this.pages + ", total=" + this.total + ", needTotal=" + this.needTotal + '}';
+    }
+
+    public int getPageNumber() {
+        return this.pageNumber;
+    }
+
+    public int getPages() {
+        return this.pages;
+    }
+
+    public int getTotal() {
+        return this.total;
+    }
+
+    public boolean isNeedTotal() {
+        return this.needTotal;
+    }
+
+    public boolean isNeedMore() {
+        return this.needMore;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public void setPages(int pages) {
+        this.pages = pages;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public void setNeedTotal(boolean needTotal) {
+        this.needTotal = needTotal;
+    }
+
+    public void setNeedMore(boolean needMore) {
+        this.needMore = needMore;
+    }
+}

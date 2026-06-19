@@ -1,0 +1,85 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.exception.BusinessException
+ *  org.bouncycastle.crypto.CipherParameters
+ *  org.bouncycastle.crypto.Digest
+ *  org.bouncycastle.crypto.digests.SM3Digest
+ *  org.bouncycastle.crypto.macs.HMac
+ *  org.bouncycastle.crypto.params.KeyParameter
+ *  org.bouncycastle.jce.provider.BouncyCastleProvider
+ *  org.bouncycastle.util.encoders.Hex
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.encrypt;
+
+import com.seeyon.boot.exception.BusinessException;
+import java.io.UnsupportedEncodingException;
+import java.security.Provider;
+import java.security.Security;
+import org.bouncycastle.crypto.CipherParameters;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.digests.SM3Digest;
+import org.bouncycastle.crypto.macs.HMac;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SM3Utils {
+    private static final Logger log = LoggerFactory.getLogger(SM3Utils.class);
+    private static final String EN_CODING = "UTF-8";
+
+    public static String encrypt(String clearText) {
+        return SM3Utils.encrypt(clearText.getBytes());
+    }
+
+    public static String encrypt(byte[] clearText) {
+        return Hex.toHexString((byte[])SM3Utils.encrypt2Byte(clearText));
+    }
+
+    public static byte[] encrypt2Byte(byte[] clearText) {
+        SM3Digest sm3 = new SM3Digest();
+        sm3.update(clearText, 0, clearText.length);
+        byte[] encryptByte = new byte[sm3.getDigestSize()];
+        sm3.doFinal(encryptByte, 0);
+        return encryptByte;
+    }
+
+    public static String encrypt(String clearText, String key) {
+        try {
+            return SM3Utils.encrypt(clearText.getBytes(EN_CODING), key);
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+    }
+
+    public static String encrypt(byte[] clearText, String key) {
+        return Hex.toHexString((byte[])SM3Utils.encrypt2Byte(clearText, key));
+    }
+
+    public static byte[] encrypt2Byte(byte[] clearText, String key) {
+        try {
+            byte[] keyByte = key.getBytes(EN_CODING);
+            KeyParameter keyParameter = new KeyParameter(keyByte);
+            SM3Digest sm3 = new SM3Digest();
+            HMac hMac = new HMac((Digest)sm3);
+            hMac.init((CipherParameters)keyParameter);
+            hMac.update(clearText, 0, clearText.length);
+            byte[] result = new byte[hMac.getMacSize()];
+            hMac.doFinal(result, 0);
+            return result;
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+    }
+
+    static {
+        Security.addProvider((Provider)new BouncyCastleProvider());
+    }
+}

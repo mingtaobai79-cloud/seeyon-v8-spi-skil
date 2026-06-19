@@ -1,0 +1,81 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.Sort$Direction
+ *  com.seeyon.boot.transport.Sort$Order
+ *  org.springframework.util.Assert
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.Sort;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.util.Assert;
+
+@DtoInfo(value="Sort")
+public class Sort
+implements Serializable {
+    @DtoAttribute(value="\u6392\u5e8f")
+    private final List<Order> orders;
+
+    public static Sort by(String ... properties) {
+        return new Sort(Direction.ASC, Arrays.asList(properties));
+    }
+
+    public static Sort by(Direction direction, String ... properties) {
+        return new Sort(direction, Arrays.asList(properties));
+    }
+
+    private Sort(Direction direction, List<String> properties) {
+        if (properties == null || properties.isEmpty()) {
+            throw new IllegalArgumentException("You have to provide at least one property to sort by!");
+        }
+        this.orders = properties.stream().map(it -> new Order(direction, it)).collect(Collectors.toList());
+    }
+
+    public static Sort by(List<Order> orders) {
+        Assert.notNull(orders, (String)"Orders must not be null!");
+        Assert.isTrue((orders.size() > 0 ? 1 : 0) != 0, (String)"At least one property must be given!");
+        return new Sort(orders);
+    }
+
+    public static Sort by(Order ... orders) {
+        Assert.notNull((Object)orders, (String)"Orders must not be null!");
+        Assert.isTrue((orders.length > 0 ? 1 : 0) != 0, (String)"At least one property must be given!");
+        return new Sort(Arrays.asList(orders));
+    }
+
+    @DtoAttribute(hidden=true)
+    public boolean isSorted() {
+        return this.orders != null && !this.orders.isEmpty();
+    }
+
+    @DtoAttribute(hidden=true)
+    public boolean isUnsorted() {
+        return !this.isSorted();
+    }
+
+    public List<Order> getOrders() {
+        return this.orders;
+    }
+
+    public Iterator<Order> iterator() {
+        return this.orders.iterator();
+    }
+
+    public Sort() {
+        this.orders = null;
+    }
+
+    protected Sort(List<Order> orders) {
+        this.orders = orders;
+    }
+}

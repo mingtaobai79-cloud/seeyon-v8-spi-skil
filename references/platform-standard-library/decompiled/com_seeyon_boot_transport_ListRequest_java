@@ -1,0 +1,73 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.BaseRequest
+ *  com.seeyon.boot.transport.Sort
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.BaseRequest;
+import com.seeyon.boot.transport.Sort;
+import java.util.HashMap;
+import java.util.Map;
+
+@DtoInfo(value="\u5217\u8868\u6761\u4ef6\u5bf9\u8c61")
+public class ListRequest
+extends BaseRequest {
+    private static final long serialVersionUID = 5741020370203813418L;
+    @DtoAttribute(value="\u6761\u4ef6")
+    private Map<String, Object> params;
+    @DtoAttribute(value="\u6392\u5e8f")
+    private Sort sort;
+
+    public static ListRequest from() {
+        return new ListRequest();
+    }
+
+    public static ListRequest from(Map<String, Object> params) {
+        ListRequest request = new ListRequest();
+        request.setParams(params);
+        return request;
+    }
+
+    public static ListRequest from(Map<String, Object> map, Sort sort) {
+        ListRequest request = new ListRequest();
+        request.setParams(map);
+        request.setSort(sort);
+        return request;
+    }
+
+    public ListRequest addParam(String paramKey, Object paramValue) {
+        if (this.params == null) {
+            this.params = new HashMap<String, Object>();
+        }
+        this.params.put(paramKey, paramValue);
+        return this;
+    }
+
+    public ListRequest sort(Sort sort) {
+        this.sort = sort;
+        return this;
+    }
+
+    public Map<String, Object> getParams() {
+        return this.params;
+    }
+
+    public Sort getSort() {
+        return this.sort;
+    }
+
+    public void setParams(Map<String, Object> params) {
+        this.params = params;
+    }
+
+    public void setSort(Sort sort) {
+        this.sort = sort;
+    }
+}

@@ -1,0 +1,51 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.apache.http.Header
+ *  org.apache.http.message.BasicHeader
+ */
+package com.seeyon.boot.util.http.common;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
+
+public class HttpHeader {
+    private Map<String, Header> headerMaps = new HashMap<String, Header>();
+
+    private HttpHeader() {
+    }
+
+    public static HttpHeader custom() {
+        return new HttpHeader();
+    }
+
+    public String get(String headName) {
+        if (this.headerMaps.containsKey(headName)) {
+            return this.headerMaps.get(headName).getValue();
+        }
+        return null;
+    }
+
+    public HttpHeader add(String headerName, String header) {
+        this.headerMaps.put(headerName, (Header)new BasicHeader(headerName, header));
+        return this;
+    }
+
+    public Header[] build() {
+        Header[] headers = new Header[this.headerMaps.size()];
+        int i = 0;
+        Iterator<Header> iterator = this.headerMaps.values().iterator();
+        while (iterator.hasNext()) {
+            Header header;
+            headers[i] = header = iterator.next();
+            ++i;
+        }
+        this.headerMaps.clear();
+        this.headerMaps = null;
+        return headers;
+    }
+}

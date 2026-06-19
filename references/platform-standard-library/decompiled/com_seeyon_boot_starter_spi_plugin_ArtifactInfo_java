@@ -1,0 +1,97 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  javax.validation.constraints.NotNull
+ */
+package com.seeyon.boot.starter.spi.plugin;
+
+import java.io.File;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import javax.validation.constraints.NotNull;
+
+public class ArtifactInfo
+implements Serializable {
+    private static final String SNAPSHOT = "SNAPSHOT";
+    private static final Pattern SNAPSHOT_TIMESTAMP = Pattern.compile("^(.*-)?([0-9]{8}\\.[0-9]{6}-[0-9]+)$");
+    private static final long serialVersionUID = 7744587268055666464L;
+    String appId;
+    @NotNull
+    String groupId;
+    @NotNull
+    String artifactId;
+    @NotNull
+    String version;
+    String extension;
+    String fileFullPath;
+    File file;
+
+    public boolean isSnapshot() {
+        return ArtifactInfo.isSnapshot(this.version);
+    }
+
+    public static boolean isSnapshot(String version) {
+        if (Objects.nonNull(version)) {
+            return version.endsWith(SNAPSHOT) || SNAPSHOT_TIMESTAMP.matcher(version).matches();
+        }
+        return false;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    public void setFileFullPath(String fileFullPath) {
+        this.fileFullPath = fileFullPath;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
+    public String getAppId() {
+        return this.appId;
+    }
+
+    public String getGroupId() {
+        return this.groupId;
+    }
+
+    public String getArtifactId() {
+        return this.artifactId;
+    }
+
+    public String getVersion() {
+        return this.version;
+    }
+
+    public String getExtension() {
+        return this.extension;
+    }
+
+    public String getFileFullPath() {
+        return this.fileFullPath;
+    }
+
+    public File getFile() {
+        return this.file;
+    }
+}

@@ -1,0 +1,60 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.context.RequestContext
+ *  com.seeyon.boot.util.StringUtils
+ *  javax.servlet.http.Cookie
+ *  javax.servlet.http.HttpServletRequest
+ *  javax.servlet.http.HttpServletResponse
+ *  org.springframework.beans.factory.annotation.Autowired
+ */
+package com.seeyon.boot.starter.web;
+
+import com.seeyon.boot.context.RequestContext;
+import com.seeyon.boot.util.StringUtils;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+
+public abstract class BaseController {
+    @Autowired(required=false)
+    protected HttpServletRequest request;
+    @Autowired(required=false)
+    protected HttpServletResponse response;
+
+    public Long getUserId() {
+        return RequestContext.get().getUserId();
+    }
+
+    public Long getLoginOrgId() {
+        return RequestContext.get().getLoginOrgId();
+    }
+
+    public boolean isLoginAsAdmin() {
+        String loginIdentity = this.request.getHeader("loginIdentity");
+        return "1".equals(loginIdentity);
+    }
+
+    public String getClientType() {
+        String clientType = this.request.getHeader("clientType");
+        return StringUtils.defaultString((String)clientType);
+    }
+
+    public String getCookie(String name) {
+        String value = "";
+        Cookie[] cookies = this.request.getCookies();
+        if (cookies != null && cookies.length > 0) {
+            for (Cookie cookie : cookies) {
+                if (!cookie.getName().equals(name)) continue;
+                value = cookie.getValue();
+                break;
+            }
+        }
+        if (StringUtils.isBlank((CharSequence)value)) {
+            value = this.request.getHeader(name);
+        }
+        return value;
+    }
+}

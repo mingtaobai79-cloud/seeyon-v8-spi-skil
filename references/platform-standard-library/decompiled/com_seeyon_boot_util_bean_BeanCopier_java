@@ -1,0 +1,223 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.context.Apps
+ *  com.seeyon.boot.context.SystemEnvironment
+ *  com.seeyon.boot.exception.BootException
+ *  com.seeyon.boot.loader.ModuleAppClassLoader
+ *  com.seeyon.boot.loader.ModuleAppClassLoaderRepository
+ *  com.seeyon.boot.loader.SeeyonURLClassLoader
+ *  com.seeyon.boot.transport.PageData
+ *  com.seeyon.boot.util.ClassPoolUtils
+ *  com.seeyon.boot.util.bean.BeanCopier$Copy
+ *  com.seeyon.boot.util.bean.BeanCopier$CopyStrategy
+ *  com.seeyon.boot.util.bean.BeanCopier$Generator
+ *  com.seeyon.boot.util.bean.BeanCopier$Key
+ *  com.seeyon.boot.util.bean.BeanCopier$NoMatchingRule
+ *  javax.validation.constraints.NotNull
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.bean;
+
+import com.seeyon.boot.context.Apps;
+import com.seeyon.boot.context.SystemEnvironment;
+import com.seeyon.boot.exception.BootException;
+import com.seeyon.boot.loader.ModuleAppClassLoader;
+import com.seeyon.boot.loader.ModuleAppClassLoaderRepository;
+import com.seeyon.boot.loader.SeeyonURLClassLoader;
+import com.seeyon.boot.transport.PageData;
+import com.seeyon.boot.util.ClassPoolUtils;
+import com.seeyon.boot.util.bean.BeanCopier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class BeanCopier {
+    private static final Logger log = LoggerFactory.getLogger(BeanCopier.class);
+    private static final String PACKAGE_NAME = BeanCopier.getPackageName(BeanCopier.class);
+    private static final Map<Key, Copy> COPIER_MAP = new ConcurrentHashMap<Key, Copy>();
+    private static final Map<ClassLoader, Set<Key>> CACHE_KEY_MAP = new ConcurrentHashMap<ClassLoader, Set<Key>>();
+    public static String dumpClass = null;
+    public static boolean logSource = false;
+    public static NoMatchingRule defaultNoMatchingRule = Apps.isRunInTest() ? NoMatchingRule.IGNORE : (SystemEnvironment.isLocal() || SystemEnvironment.isDev() || SystemEnvironment.isTest() ? NoMatchingRule.LOG_EXCEPTION : NoMatchingRule.IGNORE);
+
+    public static <T> T copy(Object from, Class<T> toClass, String ... ignorePropeties) {
+        return BeanCopier.copy(from, toClass, CopyStrategy.CONTAIN_NULL, ignorePropeties);
+    }
+
+    public static <T> T copy(Object from, Class<T> toClass, CopyStrategy strategy, String ... ignorePropeties) {
+        BeanCopier.notNull(toClass, "toClass\u4e0d\u80fd\u4e3a\u7a7a");
+        try {
+            T target = toClass.newInstance();
+            BeanCopier.copy(from, target, strategy, defaultNoMatchingRule, ignorePropeties);
+            return target;
+        }
+        catch (Exception e) {
+            throw new BootException((Throwable)e);
+        }
+    }
+
+    public static void copy(Object from, Object to, String ... ignorePropeties) {
+        BeanCopier.copy(from, to, CopyStrategy.CONTAIN_NULL, defaultNoMatchingRule, ignorePropeties);
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     * Enabled aggressive block sorting
+     * Enabled unnecessary exception pruning
+     * Enabled aggressive exception aggregation
+     * Converted monitor instructions to comments
+     * Lifted jumps to return sites
+     */
+    public static void copy(Object from, Object to, CopyStrategy strategy, NoMatchingRule noMatchingRule, String ... ignorePropeties) {
+        Key key = BeanCopier.getKey(BeanCopier.notNull(from, "\u6e90\u5bf9\u8c61\u4e0d\u80fd\u4e3a\u7a7a"), BeanCopier.notNull(to, "\u76ee\u6807\u5bf9\u8c61\u4e0d\u80fd\u4e3a\u7a7a"), BeanCopier.notNull(strategy, "\u62f7\u8d1d\u7b56\u7565\u4e0d\u80fd\u4e3a\u7a7a"), ignorePropeties);
+        Copy copy = COPIER_MAP.get(key);
+        if (copy == null) {
+            Class<BeanCopier> clazz = BeanCopier.class;
+            // MONITORENTER : com.seeyon.boot.util.bean.BeanCopier.class
+            copy = COPIER_MAP.get(key);
+            if (copy == null) {
+                Generator generator = new Generator(null);
+                generator.setSource(from.getClass());
+                generator.setTarget(to.getClass());
+                generator.setIgnorePropeties(ignorePropeties);
+                generator.setNoMatchingRule(noMatchingRule);
+                generator.setStrategy(strategy);
+                try {
+                    ClassLoader curClassLoader = from.getClass().getClassLoader();
+                    if (curClassLoader == null) {
+                        curClassLoader = BeanCopier.class.getClassLoader();
+                    }
+                    if (!(curClassLoader instanceof SeeyonURLClassLoader) && to.getClass().getClassLoader() != null) {
+                        curClassLoader = to.getClass().getClassLoader();
+                    }
+                    copy = (Copy)generator.generate(curClassLoader, from.getClass()).newInstance();
+                    COPIER_MAP.put(key, copy);
+                    Set<Key> cacheKeys = CACHE_KEY_MAP.get(curClassLoader);
+                    if (cacheKeys == null) {
+                        Map<ClassLoader, Set<Key>> map = CACHE_KEY_MAP;
+                        // MONITORENTER : map
+                        cacheKeys = CACHE_KEY_MAP.get(curClassLoader);
+                        if (cacheKeys == null) {
+                            cacheKeys = new HashSet<Key>();
+                            CACHE_KEY_MAP.put(curClassLoader, cacheKeys);
+                        }
+                        // MONITOREXIT : map
+                    }
+                    cacheKeys.add(key);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            // MONITOREXIT : clazz
+        }
+        copy.copy(from, to);
+    }
+
+    public static <T, D> PageData<D> copyPageData(@NotNull PageData<T> from, @NotNull Class<D> beanClass) {
+        PageData to = new PageData();
+        to.setPageInfo(from.getPageInfo());
+        to.setContent(BeanCopier.copyList(from.getContent(), beanClass));
+        return to;
+    }
+
+    public static <T, D> List<D> copyList(@NotNull Collection<T> from, @NotNull Class<D> beanClass, CopyStrategy strategy, String ... ignorePropeties) {
+        ArrayList<D> to = new ArrayList<D>();
+        for (T t : from) {
+            to.add(BeanCopier.copy(t, beanClass, strategy, ignorePropeties));
+        }
+        return to;
+    }
+
+    public static <T, D> List<D> copyList(@NotNull Collection<T> from, @NotNull Class<D> beanClass) {
+        ArrayList<D> to = new ArrayList<D>();
+        for (T t : from) {
+            to.add(BeanCopier.copy(t, beanClass, new String[0]));
+        }
+        return to;
+    }
+
+    private static Key getKey(Object from, Object to, CopyStrategy strategy, String[] ignoreProperties) {
+        Class<?> fromClass = from.getClass();
+        Class<?> toClass = to.getClass();
+        return new Key(fromClass, toClass, strategy, ignoreProperties);
+    }
+
+    private static String getPackageName(Class<?> clazz) {
+        String className = clazz.getName();
+        int lastDotIndex = className.lastIndexOf(".");
+        return lastDotIndex != -1 ? className.substring(0, lastDotIndex) : "";
+    }
+
+    private static <T> T notNull(T obj, String message) {
+        if (obj == null) {
+            throw new NullPointerException(message);
+        }
+        return obj;
+    }
+
+    private static <T> T notNull(T obj) {
+        return BeanCopier.notNull(obj, null);
+    }
+
+    public static void removeClassLoader(ClassLoader classLoader) {
+        BeanCopier.clear(classLoader);
+        ClassPoolUtils.clear((ClassLoader)classLoader);
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public static void clearRubbish() {
+        Map<ClassLoader, Set<Key>> map = CACHE_KEY_MAP;
+        synchronized (map) {
+            HashSet dels = new HashSet();
+            CACHE_KEY_MAP.keySet().forEach(key -> {
+                if (key instanceof ModuleAppClassLoader && !ModuleAppClassLoaderRepository.contains((ClassLoader)key)) {
+                    dels.add(key);
+                }
+            });
+            dels.forEach(classloader -> {
+                log.info("\u8865\u507f\u6e05\u9664\u8868\u5355\u5e94\u7528\u7c7b\u52a0\u8f7d\u5668[{}]", (Object)((ModuleAppClassLoader)classloader).getModuleTotalName());
+                BeanCopier.clear(classloader);
+            });
+        }
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public static void clear(ClassLoader classLoader) {
+        Map<ClassLoader, Set<Key>> map = CACHE_KEY_MAP;
+        synchronized (map) {
+            Set<Key> cacheKeys = CACHE_KEY_MAP.remove(classLoader);
+            if (cacheKeys != null) {
+                for (Key key : cacheKeys) {
+                    COPIER_MAP.remove(key);
+                }
+            }
+        }
+    }
+
+    static /* synthetic */ Logger access$200() {
+        return log;
+    }
+
+    static /* synthetic */ String access$300() {
+        return PACKAGE_NAME;
+    }
+
+    static /* synthetic */ Object access$400(Object x0) {
+        return BeanCopier.notNull(x0);
+    }
+}

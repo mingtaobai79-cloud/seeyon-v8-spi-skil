@@ -1,0 +1,86 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.google.common.collect.Sets
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.exception.BaseException
+ *  com.seeyon.boot.util.StringUtils
+ */
+package com.seeyon.boot.exception;
+
+import com.google.common.collect.Sets;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.exception.BaseException;
+import com.seeyon.boot.util.StringUtils;
+import java.util.Set;
+
+@DtoInfo(value="\u4e1a\u52a1\u5f02\u5e38\u7c7b\u3002\u5e94\u7528\u53ef\u76f4\u63a5\u4f7f\u7528\uff0c\u5fc5\u8981\u65f6\u4e5f\u53ef\u4ee5\u5b9e\u73b0\u5e94\u7528\u81ea\u5df1\u7684\u5b50\u7c7b\u3002")
+public class BusinessException
+extends BaseException {
+    private static final long serialVersionUID = -2929376449990385949L;
+    private String code = "BOOT_1000";
+    private boolean hasErrorMessage = false;
+    private Set<String> errors = Sets.newHashSet();
+
+    public BusinessException() {
+    }
+
+    public BusinessException(String code) {
+        this.code = code;
+    }
+
+    public BusinessException(String code, String ... params) {
+        super(code, params);
+        this.code = code;
+    }
+
+    public BusinessException(String code, Throwable cause) {
+        super(code, cause);
+        this.code = code;
+    }
+
+    public BusinessException addError(String customMessage) {
+        if (StringUtils.isNotBlank((CharSequence)customMessage)) {
+            this.errors.add(customMessage);
+            this.hasErrorMessage = true;
+        }
+        return this;
+    }
+
+    public static BusinessException message(String customMessage) {
+        BusinessException businessException = new BusinessException();
+        if (StringUtils.isNotBlank((CharSequence)customMessage)) {
+            businessException.errors.add(customMessage);
+            businessException.hasErrorMessage = true;
+        }
+        return businessException;
+    }
+
+    public String getMessage() {
+        String msg = "";
+        if (this.errors.isEmpty()) {
+            msg = super.getMessage();
+        } else {
+            StringBuilder sb = new StringBuilder(this.errors.size() * 15);
+            for (String message : this.errors) {
+                sb.append(message).append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            msg = sb.toString();
+        }
+        return msg;
+    }
+
+    public String code() {
+        return this.code;
+    }
+
+    public String message() {
+        return this.getMessage();
+    }
+
+    public boolean hasCustomErrorMessage() {
+        return this.hasErrorMessage;
+    }
+}

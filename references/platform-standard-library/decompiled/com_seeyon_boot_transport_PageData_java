@@ -1,0 +1,56 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.PageInfo
+ *  com.seeyon.boot.util.bean.BeanCopier
+ *  javax.validation.constraints.NotNull
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.PageInfo;
+import com.seeyon.boot.util.bean.BeanCopier;
+import java.io.Serializable;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+
+@DtoInfo(value="\u5206\u9875\u54cd\u5e94\u6570\u636e")
+public class PageData<T>
+implements Serializable {
+    private static final long serialVersionUID = -4922294792012001955L;
+    @DtoAttribute(value="\u5206\u9875\u53c2\u6570\u5bf9\u8c61")
+    private PageInfo pageInfo;
+    @DtoAttribute(value="\u6570\u636e\u96c6\u5bf9\u8c61")
+    private List<T> content;
+
+    public static <T> PageData<T> from(PageInfo pageInfo, List<T> data) {
+        PageData<T> pageData = new PageData<T>();
+        pageData.setPageInfo(pageInfo);
+        pageData.setContent(data);
+        return pageData;
+    }
+
+    public <T, D> PageData<D> to(@NotNull Class<D> beanClass) {
+        return BeanCopier.copyPageData((PageData)this, beanClass);
+    }
+
+    public PageInfo getPageInfo() {
+        return this.pageInfo;
+    }
+
+    public List<T> getContent() {
+        return this.content;
+    }
+
+    public void setPageInfo(PageInfo pageInfo) {
+        this.pageInfo = pageInfo;
+    }
+
+    public void setContent(List<T> content) {
+        this.content = content;
+    }
+}

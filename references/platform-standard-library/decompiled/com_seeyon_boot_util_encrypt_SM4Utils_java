@@ -1,0 +1,108 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.exception.BusinessException
+ *  com.seeyon.boot.util.encrypt.SM4Utils$SM4
+ *  com.seeyon.boot.util.encrypt.SM4Utils$SM4Context
+ *  org.apache.commons.codec.binary.Base64
+ *  org.apache.commons.codec.binary.Hex
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.encrypt;
+
+import com.seeyon.boot.exception.BusinessException;
+import com.seeyon.boot.util.encrypt.SM4Utils;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SM4Utils {
+    private static final Logger log = LoggerFactory.getLogger(SM4Utils.class);
+    private static final String EN_CODING = "UTF-8";
+
+    public static String encrypt(byte[] in, byte[] keyBytes) {
+        byte[] encrypted = SM4Utils.encrypt2Byte(in, keyBytes);
+        return Base64.encodeBase64String((byte[])encrypted);
+    }
+
+    public static byte[] encrypt2Byte(byte[] in, byte[] keyBytes) {
+        return SM4Utils.encrypt2Byte(in, keyBytes, true);
+    }
+
+    private static byte[] encrypt2Byte(byte[] in, byte[] keyBytes, boolean isPadding) {
+        try {
+            SM4Context ctx = new SM4Context();
+            ctx.isPadding = isPadding;
+            ctx.mode = 1;
+            SM4 sm4 = new SM4();
+            sm4.setkeyEnc(ctx, keyBytes);
+            byte[] encrypted = sm4.cryptEcb(ctx, in);
+            return encrypted;
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+    }
+
+    public static byte[] encrypt2ByteNoPadding(byte[] in, byte[] keyBytes) {
+        return SM4Utils.encrypt2Byte(in, keyBytes, false);
+    }
+
+    public static String encrypt(String content, String key) {
+        try {
+            byte[] in = content.getBytes(EN_CODING);
+            byte[] keyBytes = (byte[])new Hex().decode((Object)key);
+            return SM4Utils.encrypt(in, keyBytes);
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+    }
+
+    public static String decrypt(byte[] in, byte[] keyBytes) {
+        try {
+            byte[] decrypted = SM4Utils.decrypt2Byte(in, keyBytes);
+            return new String(decrypted, EN_CODING);
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2200", (Throwable)e);
+        }
+    }
+
+    public static byte[] decrypt2Byte(byte[] in, byte[] keyBytes) {
+        return SM4Utils.decrypt2Byte(in, keyBytes, true);
+    }
+
+    public static byte[] decrypt2ByteNoPadding(byte[] in, byte[] keyBytes) {
+        return SM4Utils.decrypt2Byte(in, keyBytes, false);
+    }
+
+    private static byte[] decrypt2Byte(byte[] in, byte[] keyBytes, boolean isPadding) {
+        try {
+            SM4Context ctx = new SM4Context();
+            ctx.isPadding = isPadding;
+            ctx.mode = 0;
+            SM4 sm4 = new SM4();
+            sm4.setkeyDec(ctx, keyBytes);
+            byte[] decrypted = sm4.cryptEcb(ctx, in);
+            return decrypted;
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2200", (Throwable)e);
+        }
+    }
+
+    public static String decrypt(String cipher, String key) {
+        try {
+            byte[] in = Base64.decodeBase64((String)cipher);
+            byte[] keyBytes = (byte[])new Hex().decode((Object)key);
+            return SM4Utils.decrypt(in, keyBytes);
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2200", (Throwable)e);
+        }
+    }
+}

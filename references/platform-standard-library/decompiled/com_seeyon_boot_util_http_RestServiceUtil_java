@@ -1,0 +1,44 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.context.RequestContext
+ *  com.seeyon.boot.transport.ListResponse
+ *  com.seeyon.boot.transport.PageResponse
+ *  com.seeyon.boot.transport.SingleResponse
+ *  com.seeyon.boot.util.http.HttpClientUtil
+ *  com.seeyon.boot.util.http.common.HttpHeader
+ */
+package com.seeyon.boot.util.http;
+
+import com.seeyon.boot.context.RequestContext;
+import com.seeyon.boot.transport.ListResponse;
+import com.seeyon.boot.transport.PageResponse;
+import com.seeyon.boot.transport.SingleResponse;
+import com.seeyon.boot.util.http.HttpClientUtil;
+import com.seeyon.boot.util.http.common.HttpHeader;
+import java.util.Map;
+
+public class RestServiceUtil {
+    public static SingleResponse getSingleResponse(Map dto, String url) {
+        HttpHeader header = RestServiceUtil.getHttpHeaders();
+        return (SingleResponse)HttpClientUtil.get((String)url, (HttpHeader)header, (Map)dto, SingleResponse.class);
+    }
+
+    public static ListResponse getListResponse(Map dto, String url) {
+        HttpHeader header = RestServiceUtil.getHttpHeaders();
+        return (ListResponse)HttpClientUtil.get((String)url, (HttpHeader)header, (Map)dto, ListResponse.class);
+    }
+
+    public static PageResponse getPageResponse(Map dto, String url) {
+        HttpHeader header = RestServiceUtil.getHttpHeaders();
+        return (PageResponse)HttpClientUtil.get((String)url, (HttpHeader)header, (Map)dto, PageResponse.class);
+    }
+
+    private static HttpHeader getHttpHeaders() {
+        HttpHeader header = HttpHeader.custom();
+        header.add("userId", String.valueOf(RequestContext.get().getUserId()));
+        header.add("tenantId", String.valueOf(RequestContext.get().getTenantId()));
+        return header;
+    }
+}

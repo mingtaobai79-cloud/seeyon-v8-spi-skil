@@ -1,0 +1,129 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.util.PropertiesBuilder
+ *  com.seeyon.boot.util.StringUtils
+ *  com.seeyon.boot.util.id.IdGeneratorProperties
+ *  com.seeyon.boot.util.id.IdentifierGenerator
+ *  com.seeyon.boot.util.id.NetAddressIdWorker
+ *  com.seeyon.boot.util.id.SnowflakeIDElement
+ *  com.seeyon.boot.util.id.SnowflakeIDGenerator
+ *  com.seeyon.boot.util.id.UUIDGenerator
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.id;
+
+import com.seeyon.boot.util.PropertiesBuilder;
+import com.seeyon.boot.util.StringUtils;
+import com.seeyon.boot.util.id.IdGeneratorProperties;
+import com.seeyon.boot.util.id.IdentifierGenerator;
+import com.seeyon.boot.util.id.NetAddressIdWorker;
+import com.seeyon.boot.util.id.SnowflakeIDElement;
+import com.seeyon.boot.util.id.SnowflakeIDGenerator;
+import com.seeyon.boot.util.id.UUIDGenerator;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Ids {
+    private static final Logger log = LoggerFactory.getLogger(Ids.class);
+    private static IdGeneratorProperties idGeneratorProperties;
+    private static IdentifierGenerator<SnowflakeIDElement> generator;
+    private static transient AtomicBoolean HAS_INITED;
+    private static Method swTraceIdMethod;
+    private static final String NO_TRACE_ID = "N/A";
+    private static final String IGNORED_TRACE_ID = "Ignored_Trace";
+
+    public static String gSwIdString() {
+        String traceId = null;
+        if (swTraceIdMethod != null) {
+            try {
+                String tmpTraceId = (String)swTraceIdMethod.invoke(null, new Object[0]);
+                if (!(NO_TRACE_ID.equals(tmpTraceId) || IGNORED_TRACE_ID.equals(tmpTraceId) || StringUtils.isEmpty((CharSequence)tmpTraceId))) {
+                    traceId = tmpTraceId;
+                }
+            }
+            catch (Exception exception) {
+                // empty catch block
+            }
+        }
+        return traceId;
+    }
+
+    public static String gidString() {
+        Ids.initGeneratorIfNecessary();
+        return generator.generateString();
+    }
+
+    public static Long gidLong() {
+        Ids.initGeneratorIfNecessary();
+        return generator.generateLong();
+    }
+
+    public static Date analyzeDate(Long id) {
+        return NetAddressIdWorker.INSTANCE.analyze(id).getDate();
+    }
+
+    public static Long uuidLong() {
+        return UUID.randomUUID().getMostSignificantBits();
+    }
+
+    public static long uuidAbsLong() {
+        long r = Ids.uuidLong();
+        if (r < 0L) {
+            r &= Long.MAX_VALUE;
+        }
+        return r;
+    }
+
+    public static String uuidString() {
+        return Ids.uuidLong().toString();
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     * Enabled force condition propagation
+     * Lifted jumps to return sites
+     */
+    private static void initGeneratorIfNecessary() {
+        if (HAS_INITED.get()) return;
+        Class<Ids> clazz = Ids.class;
+        synchronized (Ids.class) {
+            if (HAS_INITED.get()) return;
+            idGeneratorProperties = (IdGeneratorProperties)PropertiesBuilder.buildProperties(IdGeneratorProperties.class);
+            switch (idGeneratorProperties.getEngine().toUpperCase()) {
+                case "SNOWFLAKE": {
+                    if (idGeneratorProperties.isAbsolute()) {
+                        SnowflakeIDGenerator.setAbsolute((boolean)true);
+                    }
+                    generator = NetAddressIdWorker.INSTANCE;
+                    break;
+                }
+                default: {
+                    generator = new UUIDGenerator();
+                }
+            }
+            HAS_INITED.set(true);
+            // ** MonitorExit[var0] (shouldn't be in output)
+            return;
+        }
+    }
+
+    static {
+        generator = null;
+        HAS_INITED = new AtomicBoolean(false);
+        swTraceIdMethod = null;
+        try {
+            Class<?> clazz = Class.forName("org.apache.skywalking.apm.agent.core.context.ContextManager");
+            swTraceIdMethod = clazz.getMethod("getGlobalTraceId", new Class[0]);
+        }
+        catch (ClassNotFoundException | NoSuchMethodException e) {
+            log.info("skyWalking\u8c03\u7528\u94fe\u76d1\u63a7\u672a\u5f00\u542f");
+        }
+    }
+}

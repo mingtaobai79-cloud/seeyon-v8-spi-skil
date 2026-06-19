@@ -1,0 +1,61 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.util.IpUtils
+ *  com.seeyon.boot.util.StringUtils
+ *  javax.servlet.http.HttpServletRequest
+ *  javax.servlet.http.HttpServletResponse
+ */
+package com.seeyon.boot.starter.web.util;
+
+import com.seeyon.boot.util.IpUtils;
+import com.seeyon.boot.util.StringUtils;
+import java.util.Calendar;
+import java.util.Date;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class WebUtils {
+    public static boolean checkETag(HttpServletRequest request, HttpServletResponse response, String eTag) {
+        String previousToken = request.getHeader("If-None-Match");
+        if (previousToken != null && previousToken.equals(eTag)) {
+            response.setStatus(304);
+            response.setHeader("ETag", eTag);
+            return true;
+        }
+        return false;
+    }
+
+    public static void writeETag(HttpServletRequest request, HttpServletResponse response, String eTag) {
+        WebUtils.writeETag(request, response, eTag, 0L);
+    }
+
+    public static void writeETag(HttpServletRequest request, HttpServletResponse response, String eTag, long cacheDate) {
+        if (cacheDate > 0L) {
+            response.setHeader("Expires", String.valueOf(System.currentTimeMillis() + cacheDate));
+            response.setHeader("Cache-Control", "max-age=" + cacheDate);
+        } else if (StringUtils.isNotBlank((CharSequence)eTag)) {
+            Calendar cal = Calendar.getInstance();
+            cal.set(14, 0);
+            Date lastModified = cal.getTime();
+            response.setHeader("ETag", eTag);
+            response.setHeader("Cache-Control", "no-cache");
+            response.setDateHeader("Last-Modified", lastModified.getTime());
+        }
+    }
+
+    public static String getClientIp(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        String ip = request.getHeader("x-real-ip");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        if (IpUtils.isIp((String)ip)) {
+            return ip;
+        }
+        return null;
+    }
+}

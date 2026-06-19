@@ -1,0 +1,34 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import java.io.Serializable;
+
+@DtoInfo(value="\u54cd\u5e94\u6570\u636e")
+public class SingleData<T>
+implements Serializable {
+    private static final long serialVersionUID = 2120312638922106459L;
+    @DtoAttribute(value="\u6570\u636e\u5bf9\u8c61")
+    private T content;
+
+    public static <T> SingleData<T> from(T data) {
+        SingleData<T> singleData = new SingleData<T>();
+        singleData.setContent(data);
+        return singleData;
+    }
+
+    public T getContent() {
+        return this.content;
+    }
+
+    public void setContent(T content) {
+        this.content = content;
+    }
+}

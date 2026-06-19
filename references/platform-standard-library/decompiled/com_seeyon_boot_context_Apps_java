@@ -1,0 +1,855 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  cn.hutool.core.io.resource.Resource
+ *  cn.hutool.core.io.resource.ResourceUtil
+ *  com.seeyon.boot.annotation.BootApp
+ *  com.seeyon.boot.conifg.SystemProperties
+ *  com.seeyon.boot.context.ApplicationContextHolder
+ *  com.seeyon.boot.context.EnvironmentHolder
+ *  com.seeyon.boot.context.RequestContext
+ *  com.seeyon.boot.context.SystemEnvironment
+ *  com.seeyon.boot.context.model.AppInfo
+ *  com.seeyon.boot.context.model.BuildInfo
+ *  com.seeyon.boot.domain.dao.support.DatabaseType
+ *  com.seeyon.boot.exception.BootException
+ *  com.seeyon.boot.init.SeeyonApplicationRunListener
+ *  com.seeyon.boot.log.LogbackProperties
+ *  com.seeyon.boot.log.enums.LogPathTypeEnum
+ *  com.seeyon.boot.util.DateUtils
+ *  com.seeyon.boot.util.IpUtils
+ *  com.seeyon.boot.util.JsonUtils
+ *  com.seeyon.boot.util.PomXmlUtil
+ *  com.seeyon.boot.util.ResourceUtils
+ *  com.seeyon.boot.util.StringUtils
+ *  com.seeyon.boot.util.bean.BeanReflections
+ *  org.apache.commons.io.FileUtils
+ *  org.apache.commons.io.IOUtils
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ *  org.springframework.beans.factory.support.DefaultListableBeanFactory
+ *  org.springframework.context.ApplicationContext
+ *  org.springframework.core.env.ConfigurableEnvironment
+ *  org.springframework.core.env.Environment
+ *  org.springframework.core.env.MutablePropertySources
+ *  org.springframework.core.io.Resource
+ */
+package com.seeyon.boot.context;
+
+import cn.hutool.core.io.resource.Resource;
+import cn.hutool.core.io.resource.ResourceUtil;
+import com.seeyon.boot.annotation.BootApp;
+import com.seeyon.boot.conifg.SystemProperties;
+import com.seeyon.boot.context.ApplicationContextHolder;
+import com.seeyon.boot.context.EnvironmentHolder;
+import com.seeyon.boot.context.RequestContext;
+import com.seeyon.boot.context.SystemEnvironment;
+import com.seeyon.boot.context.model.AppInfo;
+import com.seeyon.boot.context.model.BuildInfo;
+import com.seeyon.boot.domain.dao.support.DatabaseType;
+import com.seeyon.boot.exception.BootException;
+import com.seeyon.boot.init.SeeyonApplicationRunListener;
+import com.seeyon.boot.log.LogbackProperties;
+import com.seeyon.boot.log.enums.LogPathTypeEnum;
+import com.seeyon.boot.util.DateUtils;
+import com.seeyon.boot.util.IpUtils;
+import com.seeyon.boot.util.JsonUtils;
+import com.seeyon.boot.util.PomXmlUtil;
+import com.seeyon.boot.util.ResourceUtils;
+import com.seeyon.boot.util.StringUtils;
+import com.seeyon.boot.util.bean.BeanReflections;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
+import java.util.stream.Stream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
+
+public class Apps {
+    private static final Logger log = LoggerFactory.getLogger(Apps.class);
+    public static final String BASE = "seeyon";
+    public static final String ENV_PREFIX = "seeyon-";
+    public static final String DUBBO_PREFIX = "dubbo-";
+    public static final String HTTP_PORT = "server.port";
+    public static final String WEBSOCKET_PORT = "websocket.port";
+    public static final String PID = "seeyon.pid";
+    public static final String SPRING_PROFILE_ACTIVE = "spring.profiles.active";
+    public static final String UDC_APP = "seeyon.udcApp";
+    public static final String APP_NAME = "seeyon.appName";
+    public static final String APP_NAMES = "seeyon.appNames";
+    public static final String APP_CAPTION = "seeyon.appCaption";
+    public static final String APP_VERSION = "seeyon.appVersion";
+    public static final String APP_DESCRIPTION = "seeyon.description";
+    public static final String APP_OWNER = "seeyon.owner";
+    public static final String APP_STARTUP_TIME = "seeyon.startup.time";
+    public static final String APP_STARTUP_CONSUME_TIME = "seeyon.startup.consume.time";
+    public static final String APP_JVM_STARTUP_CONSUME_TIME = "seeyon.jvm.startup.consume.time";
+    public static final String DEV_MODE_KEY = "seeyon.devMode";
+    public static final String DATABASE_TYPE = "seeyon.database.type";
+    public static final String DATABASE_REAL_TYPE = "seeyon.datasource.compatibilityItem.realType";
+    public static final String DATABASE_TRUNK_TYPE = "seeyon.datasource.compatibilityItem.trunkType";
+    public static final String LOG_PATH = "seeyon.log.path";
+    public static final String BASE_PACKAGE = "seeyon.basePackage";
+    public static final String LOG_AUDIT_TYPE = "seeyon.log.auditType";
+    public static final String DEPLOY_TYPE = "seeyon.deploy.type";
+    public static List<String> baseAppNameList = Arrays.asList("ctp-user", "ctp-message", "organization", "portal", "ctp-affair", "bpm", "cdp-schedule", "cip-manager", "cip-capability", "cip-connector", "cdp-data", "app-common");
+    public static final String INSTANCE_ID = UUID.randomUUID().toString();
+    private static String logBasePath = null;
+    private static String appLogPath = null;
+    private static String dataPath = null;
+    private static String tmpPath = null;
+    private static Boolean isTest;
+    private static Long unitTenantId;
+    private static Map<String, AppInfo> onlineApps;
+    private static final ThreadLocal USER_CTX;
+    private static boolean running;
+    private static boolean monolithic;
+    private static boolean monolithicExt;
+    private static Boolean elastic;
+    private static String appName;
+    private static String appVersion;
+    private static String[] appNames;
+    private static String mainAppName;
+    private static int httpPort;
+    private static int websocketPort;
+    private static BuildInfo buildInfo;
+    private static DatabaseType DATA_BASE_TYPE;
+    private static DatabaseType DATA_BASE_REAL_TYPE;
+    private static DatabaseType DATA_BASE_TRUNK_TYPE;
+    public static Integer FINAL_PARAMETERS_LIMIT;
+    private static Integer parameterLimit;
+    private static Map<String, BuildInfo> jarInfoMap;
+    private static Map<String, BuildInfo> currentAppJarInfoMap;
+
+    public static String getProtocol() {
+        return SystemProperties.getProtocol();
+    }
+
+    public static int getPort() {
+        return SystemProperties.getPort();
+    }
+
+    public static String getDomain() {
+        return SystemProperties.getDomain();
+    }
+
+    public static String getFullDomain() {
+        if (80 == SystemProperties.getPort() || 443 == SystemProperties.getPort()) {
+            return SystemProperties.getProtocol() + "://" + SystemProperties.getDomain();
+        }
+        return SystemProperties.getProtocol() + "://" + SystemProperties.getDomain() + ":" + SystemProperties.getPort();
+    }
+
+    public static String getFrontApiFullDomain() {
+        String fullDomain = SystemProperties.getFrontApiFullDomain();
+        if (StringUtils.isBlank((CharSequence)fullDomain)) {
+            return Apps.getFullDomain() + "/service";
+        }
+        if (StringUtils.startsWith((CharSequence)fullDomain, (CharSequence)"/")) {
+            return Apps.getFullDomain() + fullDomain;
+        }
+        return fullDomain;
+    }
+
+    public static Long getUnitTenantId() {
+        return unitTenantId;
+    }
+
+    public static void setUnitTenantId(Long tenantId) {
+        unitTenantId = tenantId;
+    }
+
+    public static boolean isUdcApp() {
+        return Boolean.getBoolean(UDC_APP);
+    }
+
+    public static String getMainAppName() {
+        if (mainAppName == null) {
+            String name = System.getenv().get("appname");
+            if (Apps.isWarDeploy()) {
+                if (StringUtils.isBlank((CharSequence)name)) {
+                    BootException.throwIt((String)"War\u5305\u90e8\u7f72,\u8bf7\u8bbe\u7f6e\u73af\u5883\u53d8\u91cfappname");
+                } else {
+                    mainAppName = name;
+                }
+            } else {
+                mainAppName = Apps.getSingleAppName();
+            }
+        }
+        return mainAppName;
+    }
+
+    public static String getSourceAppName() {
+        String sourceAppName;
+        if (Apps.isMonolithic() && StringUtils.isNotBlank((CharSequence)(sourceAppName = RequestContext.get().getSourceAppName()))) {
+            return sourceAppName;
+        }
+        return Apps.getSingleAppName();
+    }
+
+    public static String getAppName() {
+        return Apps.getSingleAppName();
+    }
+
+    private static String getSingleAppName() {
+        if (appName == null) {
+            if (Apps.isMonolithic()) {
+                appName = "a9";
+            } else {
+                String name = System.getProperty(APP_NAME);
+                if (StringUtils.isBlank((CharSequence)name)) {
+                    BootException.throwIt((String)"\u6ca1\u6709\u8bbe\u7f6e\u5e94\u7528\u540d\u79f0,\u8bf7\u8bbe\u7f6e\u7cfb\u7edf\u53d8\u91cfseeyon.appName");
+                }
+                appName = name;
+            }
+        }
+        return appName;
+    }
+
+    public static String[] getAppNames() {
+        if (appNames != null) {
+            return appNames;
+        }
+        String names = System.getProperty(APP_NAMES);
+        if (StringUtils.isEmpty((CharSequence)names)) {
+            BootException.throwIt((String)"\u6ca1\u6709\u8bbe\u7f6e\u7ec4\u5408\u5e94\u7528\u540d\u79f0,\u8bf7\u8bbe\u7f6e\u7cfb\u7edf\u53d8\u91cfseeyon.appNames");
+        }
+        String[] nameArray = StringUtils.split((String)names, (String)",");
+        if (monolithic) {
+            HashSet<String> appNameSet = new HashSet<String>(Apps.getAllAppInfo().keySet());
+            Stream.of(nameArray).forEach(appNameSet::add);
+            nameArray = appNameSet.toArray(nameArray);
+        }
+        appNames = nameArray;
+        return nameArray;
+    }
+
+    public static String getLogBaseName() {
+        String name = System.getProperty("logBaseName");
+        if (StringUtils.isBlank((CharSequence)name)) {
+            name = Apps.getAppName();
+        }
+        return name;
+    }
+
+    public static String getAppCaption() {
+        String name = System.getProperty(APP_CAPTION);
+        if (name == null) {
+            BootException.throwIt((String)"\u6ca1\u6709\u8bbe\u7f6e\u5e94\u7528\u663e\u793a,\u8bf7\u8bbe\u7f6e\u7cfb\u7edf\u53d8\u91cfseeyon.appCaption");
+        }
+        return name;
+    }
+
+    public static BuildInfo getBuildInfo() {
+        if (buildInfo != null) {
+            return buildInfo;
+        }
+        Resource resourceObj = null;
+        try {
+            try {
+                resourceObj = ResourceUtil.getResourceObj((String)("classpath:META-INF/maven/com.seeyon/" + Apps.getAppName() + "-assemble/pom.properties"));
+            }
+            catch (Throwable throwable) {
+                // empty catch block
+            }
+            if (resourceObj == null && (Apps.isWarDeploy() || Apps.isMonolithic())) {
+                try {
+                    resourceObj = ResourceUtil.getResourceObj((String)("../../META-INF/maven/com.seeyon/" + Apps.getAppName() + "-assemble/pom.properties"));
+                }
+                catch (Exception exception) {
+                    // empty catch block
+                }
+                if (resourceObj == null) {
+                    try {
+                        resourceObj = ResourceUtil.getResourceObj((String)("../../META-INF/maven/com.seeyon/" + Apps.getAppName() + "-assemble-resource/pom.properties"));
+                    }
+                    catch (Exception exception) {
+                        // empty catch block
+                    }
+                }
+            }
+            if (resourceObj == null) {
+                try {
+                    resourceObj = ResourceUtil.getResourceObj((String)("classpath:META-INF/maven/com.seeyon/" + Apps.getAppName() + "-assemble-resource/pom.properties"));
+                }
+                catch (Exception e) {
+                    log.info("\u517c\u5bb9udc\u642d\u51fa\u6765\u7684\u5e94\u7528,\u83b7\u53d6\u5e94\u7528build\u4fe1\u606f\u5931\u8d25");
+                }
+            }
+            if (resourceObj != null) {
+                buildInfo = Apps.getBuildInfo(resourceObj.getStream());
+            }
+        }
+        catch (Throwable e) {
+            log.error("\u83b7\u53d6\u5e94\u7528build\u4fe1\u606f\u5931\u8d25", e);
+        }
+        if (buildInfo == null) {
+            buildInfo = Apps.getBuildInfoForLocalRun();
+        }
+        if (buildInfo == null) {
+            buildInfo = new BuildInfo();
+            buildInfo.setVersion(Apps.getAppVersion());
+            buildInfo.setTime(DateUtils.format((Date)new Date(), (String)"yyyyMMddHHmmss"));
+            buildInfo.setGroupId(Apps.getBasePackage());
+        }
+        return buildInfo;
+    }
+
+    public static BuildInfo getBuildInfoForLocalRun() {
+        boolean exists = new File("pom.xml").exists();
+        if (!exists) {
+            return null;
+        }
+        log.info("[local_run==>]\u672c\u5730\u73af\u5883\u8fd0\u884c\uff0c\u6ca1\u6709\u8bfb\u53d6\u5230BuildInfo,\u8bfb\u53d6\u5f53\u524d\u9879\u76ee\u7684pom.xml ");
+        log.info("[local_run==>]\u672c\u5730\u7814\u53d1\u5de5\u5177\u542f\u52a8\uff0c\u5f3a\u5236\u5f00\u542f\u672c\u5730\u8fd0\u884c\uff1alocal.enable=true,local.startWithIdea=true");
+        System.setProperty("local.enable", "true");
+        System.setProperty("local.startWithIdea", "true");
+        PomXmlUtil pomXmlUtil = new PomXmlUtil("pom.xml");
+        BuildInfo buildInfo = new BuildInfo();
+        buildInfo.setVersion(pomXmlUtil.getVersion());
+        buildInfo.setTime(DateUtils.format((Date)new Date(), (String)"yyyyMMddHHmmss"));
+        buildInfo.setGroupId(pomXmlUtil.getGroupId());
+        buildInfo.setArtifactId(pomXmlUtil.getArtifactId());
+        return buildInfo;
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public static BuildInfo getBuildInfo(org.springframework.core.io.Resource resource) {
+        BuildInfo buildInfo = null;
+        InputStream inputStream = null;
+        try {
+            inputStream = resource.getInputStream();
+            Map<String, String> buildMap = Apps.getBuildMap(inputStream);
+            buildInfo = new BuildInfo();
+            buildInfo.setVersion(buildMap.get("version"));
+            buildInfo.setGroupId(buildMap.get("groupId"));
+            buildInfo.setArtifactId(buildMap.get("artifactId"));
+            buildInfo.setTime(buildMap.containsKey("time") ? buildMap.get("time") : DateUtils.format((Date)new Date(resource.lastModified()), (String)"yyyyMMddHHmmss"));
+        }
+        catch (Exception exception) {
+        }
+        finally {
+            IOUtils.closeQuietly((InputStream)inputStream);
+        }
+        return buildInfo;
+    }
+
+    public static BuildInfo getBuildInfo(InputStream pomPropertiesInputStream) {
+        BuildInfo buildInfo = new BuildInfo();
+        Map<String, String> buildMap = Apps.getBuildMap(pomPropertiesInputStream);
+        buildInfo.setVersion(buildMap.get("version"));
+        buildInfo.setGroupId(buildMap.get("groupId"));
+        buildInfo.setArtifactId(buildMap.get("artifactId"));
+        buildInfo.setTime(buildMap.containsKey("time") ? buildMap.get("time") : DateUtils.format((Date)new Date(), (String)"yyyyMMddHHmmss"));
+        return buildInfo;
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    private static Map<String, String> getBuildMap(InputStream pomPropertiesInputStream) {
+        String timeStamp = "";
+        HashMap<String, String> map = new HashMap<String, String>();
+        try {
+            List strings = IOUtils.readLines((InputStream)pomPropertiesInputStream, (String)"UTF-8");
+            SimpleDateFormat cstDateFormatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.US);
+            for (String line : strings) {
+                if (line.startsWith("#")) {
+                    String dateStr = line.substring(1);
+                    try {
+                        timeStamp = DateUtils.format((Date)cstDateFormatter.parse(dateStr), (String)"yyyyMMddHHmmss");
+                    }
+                    catch (Exception exception) {}
+                    continue;
+                }
+                if (!line.contains("=")) continue;
+                String[] split = line.split("=");
+                map.put(split[0], split[1]);
+            }
+            if (StringUtils.isNotBlank((CharSequence)timeStamp)) {
+                map.put("time", timeStamp);
+            }
+        }
+        catch (Exception e) {
+            BootException.throwIt((String)"\u8bfb\u53d6pom\u4fe1\u606f\u5931\u8d25");
+        }
+        finally {
+            IOUtils.closeQuietly((InputStream)pomPropertiesInputStream);
+        }
+        return map;
+    }
+
+    public static String getBuildVersion() {
+        return Apps.getBuildInfo().getVersion() + "-" + Apps.getBuildInfo().getTime();
+    }
+
+    public static String getAppDescription() {
+        return System.getProperty(APP_DESCRIPTION);
+    }
+
+    public static String getAppOwner() {
+        return System.getProperty(APP_OWNER);
+    }
+
+    public static String getAppVersion() {
+        if (appVersion != null) {
+            return appVersion;
+        }
+        String version = System.getProperty(APP_VERSION);
+        if (StringUtils.isBlank((CharSequence)version)) {
+            BootException.throwIt((String)"\u6ca1\u6709\u8bbe\u7f6e\u5e94\u7528\u7248\u672c,\u8bf7\u8bbe\u7f6e\u7cfb\u7edf\u53d8\u91cfseeyon.appVersion");
+        }
+        appVersion = version;
+        return version;
+    }
+
+    public static String getAppLogPath() {
+        if (appLogPath != null) {
+            return appLogPath;
+        }
+        String tmp = System.getProperty("logBasePath");
+        logBasePath = !StringUtils.isEmpty((CharSequence)tmp) ? tmp + (tmp.endsWith(File.separator) ? "" : File.separator) : (SystemEnvironment.isLocal() ? "target" + File.separator + "logs" + File.separator : File.separator + "var" + File.separator + "log" + File.separator + "webapps" + File.separator);
+        String logPath = LogbackProperties.getLogPath();
+        if (StringUtils.isNotBlank((CharSequence)logPath)) {
+            logBasePath = logPath.endsWith(File.separator) ? logPath : logPath + File.separator;
+        }
+        appLogPath = Apps.isMonolithic() ? logBasePath : (Apps.isWarDeploy() ? (Apps.isUdcApp() ? logBasePath + Apps.getMainAppName() + File.separator + Apps.getAppName() + "-" + Apps.getAppVersion() + File.separator : logBasePath + Apps.getMainAppName() + File.separator + Apps.getAppName() + File.separator) : logBasePath + Apps.getAppName() + File.separator);
+        String logPathType = System.getProperty("SEEYON_LOG_PATH_TYPE");
+        if (StringUtils.isNotBlank((CharSequence)logPathType) && Integer.parseInt(logPathType) == LogPathTypeEnum.IP.code()) {
+            String ip = IpUtils.getFirstNoLoopbackIPV4Address();
+            appLogPath = appLogPath + ip + File.separator;
+        }
+        try {
+            FileUtils.forceMkdir((File)new File(appLogPath));
+        }
+        catch (IOException e) {
+            BootException.throwIt((String)"\u65e5\u5fd7\u76ee\u5f55\u521b\u5efa\u5931\u8d25", (Throwable)e);
+        }
+        return appLogPath;
+    }
+
+    public static String getAppDataPath() {
+        if (dataPath != null) {
+            return dataPath;
+        }
+        dataPath = Apps.isRunInTest() ? "target" + File.separator + "appdata" + File.separator + Apps.getAppName() + File.separator : System.getProperty("user.home") + File.separator + "appdata" + File.separator + Apps.getAppName() + File.separator;
+        return dataPath;
+    }
+
+    public static String getAppTmpPath() {
+        if (tmpPath != null) {
+            return tmpPath;
+        }
+        tmpPath = System.getProperty("java.io.tmpdir") + File.separator + Apps.getAppName();
+        new File(tmpPath).mkdirs();
+        return tmpPath;
+    }
+
+    public static String getBasePackage() {
+        return "com.seeyon";
+    }
+
+    public static String getComponentPackage() {
+        return "com.seeyon.boot";
+    }
+
+    public static String getAppSessionCookieName() {
+        return Apps.getAppName() + "-session";
+    }
+
+    public static int getHttpPort() {
+        return httpPort;
+    }
+
+    public static int setHttpPort(int port) {
+        httpPort = port;
+        return httpPort;
+    }
+
+    public static int getWebsocketPort() {
+        return websocketPort == 0 ? SystemProperties.getWebsocketPort() : websocketPort;
+    }
+
+    public static int setWebsocketPort(int port) {
+        websocketPort = port;
+        return websocketPort;
+    }
+
+    public static int getPid() {
+        return Integer.parseInt(System.getProperty(PID));
+    }
+
+    public static void exposeInfo(String key, Object value) {
+        String infoKey = "info." + key;
+        System.setProperty(infoKey, String.valueOf(value));
+    }
+
+    public static void setProfileIfNotExists(String profile) {
+        if (StringUtils.isEmpty((CharSequence)System.getProperty(SPRING_PROFILE_ACTIVE)) && !System.getenv().containsKey("SPRING_PROFILES_ACTIVE")) {
+            System.setProperty(SPRING_PROFILE_ACTIVE, profile);
+        }
+    }
+
+    public static void setAppStartupTime(long startupTime, double consumeSeconds) {
+        System.setProperty(APP_STARTUP_TIME, String.valueOf(startupTime));
+        System.setProperty(APP_STARTUP_CONSUME_TIME, String.valueOf(consumeSeconds));
+    }
+
+    public static void setAppOwner(String owner) {
+        System.setProperty(APP_OWNER, owner);
+    }
+
+    public static String setAppOwner() {
+        String name = System.getProperty(APP_OWNER);
+        if (name == null) {
+            BootException.throwIt((String)"\u6ca1\u6709\u8bbe\u7f6eOwner,\u8bf7\u8bbe\u7f6e\u7cfb\u7edf\u53d8\u91cfseeyon.owner");
+        }
+        return name;
+    }
+
+    public static String getAppInstanceId() {
+        return INSTANCE_ID;
+    }
+
+    public static long getAppStartupTime() {
+        return Long.parseLong(System.getProperty(APP_STARTUP_TIME, "0"));
+    }
+
+    public static double getAppStartupConsumeTime() {
+        return Double.parseDouble(System.getProperty(APP_STARTUP_CONSUME_TIME, "0.0"));
+    }
+
+    public static String getProfile() {
+        String env = System.getProperty(SPRING_PROFILE_ACTIVE);
+        if (StringUtils.isEmpty((CharSequence)env)) {
+            env = System.getenv().get("SPRING_PROFILES_ACTIVE");
+        }
+        if (StringUtils.isEmpty((CharSequence)env)) {
+            BootException.throwIt((String)"\u6ca1\u6709\u8bbe\u7f6e\u73af\u5883\u6807\u8bc6\uff0c\u8bf7\u8bbe\u7f6ejava\u7cfb\u7edf\u542f\u52a8\u53c2\u6570-Dspring.profiles.active=test,\u6216\u8005\u64cd\u4f5c\u7cfb\u7edf\u73af\u5883\u53d8\u91cfSPRING_PROFILES_ACTIVE=test");
+        }
+        return env;
+    }
+
+    public static ApplicationContext getApplicationContext() {
+        return ApplicationContextHolder.get();
+    }
+
+    public static DefaultListableBeanFactory getBeanFactory() {
+        return (DefaultListableBeanFactory)Apps.getApplicationContext().getAutowireCapableBeanFactory();
+    }
+
+    public static Environment getEnvironment() {
+        return EnvironmentHolder.get();
+    }
+
+    public static DatabaseType getDatabaseType() {
+        if (DATA_BASE_TYPE == null) {
+            DATA_BASE_TYPE = DatabaseType.valueOf((String)System.getProperty(DATABASE_TYPE));
+        }
+        return DATA_BASE_TYPE;
+    }
+
+    public static DatabaseType getDatabaseRealType() {
+        String realType;
+        if (DATA_BASE_REAL_TYPE == null && StringUtils.isNotBlank((CharSequence)(realType = System.getProperty(DATABASE_REAL_TYPE)))) {
+            DATA_BASE_REAL_TYPE = DatabaseType.valueOf((String)realType);
+        }
+        return DATA_BASE_REAL_TYPE;
+    }
+
+    public static DatabaseType getDatabaseTrunkType() {
+        String trunkType;
+        if (DATA_BASE_TRUNK_TYPE == null && StringUtils.isNotBlank((CharSequence)(trunkType = System.getProperty(DATABASE_TRUNK_TYPE)))) {
+            DATA_BASE_TRUNK_TYPE = DatabaseType.valueOf((String)trunkType);
+        }
+        return DATA_BASE_TRUNK_TYPE;
+    }
+
+    public static RequestContext getRequestContext() {
+        return RequestContext.get();
+    }
+
+    public static boolean isDevMode() {
+        return Boolean.valueOf(System.getProperty(DEV_MODE_KEY));
+    }
+
+    public static boolean isRunInTest() {
+        if (isTest == null) {
+            ConfigurableEnvironment environment = (ConfigurableEnvironment)Apps.getEnvironment();
+            MutablePropertySources propertySources = environment.getPropertySources();
+            isTest = propertySources.contains("Inlined Test Properties");
+        }
+        return isTest;
+    }
+
+    public static void started() {
+        running = true;
+    }
+
+    public static boolean isRunning() {
+        return running;
+    }
+
+    public static void shutdown() {
+        SeeyonApplicationRunListener.shutdownApp();
+    }
+
+    public static boolean isScanPackage(Class clazz) {
+        return clazz.getName().startsWith("com.seeyon");
+    }
+
+    public static String getFrontServicePrefix() {
+        return Apps.getEnvironment().getProperty("seeyon.front.service.prefix");
+    }
+
+    public static void ignorePermission(HashSet<String> entityFullNameSet) {
+        if (null == entityFullNameSet) {
+            entityFullNameSet = new HashSet();
+        }
+        Apps.putThreadContext("IGNORE_PERMISSION_KEY", entityFullNameSet);
+    }
+
+    public static void ignorePermissionFinish() {
+        Apps.removeThreadContext("IGNORE_PERMISSION_KEY");
+    }
+
+    public static boolean ignorePermissionCheck(String entityFullName) {
+        Object set = Apps.getThreadContext("IGNORE_PERMISSION_KEY");
+        if (null == set) {
+            return false;
+        }
+        HashSet ignoreSet = (HashSet)set;
+        if (ignoreSet.isEmpty()) {
+            return true;
+        }
+        return ignoreSet.contains(entityFullName);
+    }
+
+    public static String ignorePermissionKey() {
+        Object set = Apps.getThreadContext("IGNORE_PERMISSION_KEY");
+        if (null == set) {
+            return "false";
+        }
+        HashSet ignoreSet = (HashSet)set;
+        if (ignoreSet.isEmpty()) {
+            return "true";
+        }
+        return JsonUtils.toJson((Object)ignoreSet);
+    }
+
+    public static void putThreadContext(String ctxKey, Object ctxValue) {
+        HashMap<String, Object> ctxMap = (HashMap<String, Object>)USER_CTX.get();
+        if (ctxMap == null) {
+            ctxMap = new HashMap<String, Object>();
+            USER_CTX.set(ctxMap);
+        }
+        ctxMap.put(ctxKey, ctxValue);
+    }
+
+    public static Object getThreadContext(String ctxKey) {
+        return Apps.getThreadContext(ctxKey, null);
+    }
+
+    private static Object getThreadContext(String ctxKey, Object defaultVal) {
+        Map ctxMap = (Map)USER_CTX.get();
+        if (ctxMap == null) {
+            return defaultVal;
+        }
+        Object val = ctxMap.get(ctxKey);
+        return val == null ? defaultVal : val;
+    }
+
+    public static void removeThreadContext(String ctxKey) {
+        Map ctxMap = (Map)USER_CTX.get();
+        if (ctxMap != null) {
+            ctxMap.remove(ctxKey);
+        }
+    }
+
+    public static void clearThreadContext() {
+        USER_CTX.remove();
+    }
+
+    public static boolean isOnLine(String appName) {
+        return true;
+    }
+
+    public static boolean isMonolithic() {
+        return monolithic;
+    }
+
+    public static String getDeployType() {
+        return System.getProperty(DEPLOY_TYPE);
+    }
+
+    public static boolean isWarDeploy() {
+        return "war".equals(Apps.getDeployType());
+    }
+
+    public static String getDeployName() {
+        return Apps.isWarDeploy() ? Apps.getAppName() + "-assemble/" : "";
+    }
+
+    public static boolean isElastic() {
+        if (Apps.isMonolithic()) {
+            return false;
+        }
+        if (null == elastic) {
+            elastic = StringUtils.isNotEmpty((CharSequence)Apps.getEnvironment().getProperty("seeyon.datasource.enableElastic")) && "true".equals(Apps.getEnvironment().getProperty("seeyon.datasource.enableElastic")) ? Boolean.valueOf(true) : Boolean.valueOf(false);
+        }
+        return elastic;
+    }
+
+    public static boolean isMonolithicExt() {
+        return monolithicExt;
+    }
+
+    public static void setMonolithic(boolean isMonolithic) {
+        monolithic = isMonolithic;
+        if (monolithic) {
+            System.setProperty("seeyon.config.engine", "single");
+        }
+    }
+
+    public static void setMonolithicExt(boolean isMonolithicExt) {
+        monolithicExt = isMonolithicExt;
+        if (monolithicExt) {
+            System.setProperty("seeyon.config.engine_ext", "ext");
+        }
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public static Map<String, AppInfo> getAllAppInfo() {
+        if (onlineApps.isEmpty()) {
+            Map<String, AppInfo> map = onlineApps;
+            synchronized (map) {
+                if (onlineApps.isEmpty()) {
+                    try {
+                        if (!monolithic && !Apps.isElastic()) {
+                            AppInfo appInfo = new AppInfo();
+                            appInfo.setAppCaption(Apps.getAppCaption());
+                            appInfo.setAppName(Apps.getAppName());
+                            appInfo.setDescription(Apps.getAppDescription());
+                            appInfo.setOwner(Apps.getAppOwner());
+                            appInfo.setUdcApp(Apps.isUdcApp());
+                            appInfo.setBasePackage(Apps.getBasePackage());
+                            appInfo.setBuildInfo(Apps.getBuildInfo());
+                            onlineApps.put(appInfo.getAppName(), appInfo);
+                        } else {
+                            String assembleJarName = "-assemble-resource";
+                            Set classes = BeanReflections.getTypesAnnotatedWith(BootApp.class);
+                            for (Class clazz : classes) {
+                                BootApp bootApp = clazz.getAnnotation(BootApp.class);
+                                if ("a9".equals(bootApp.name())) continue;
+                                AppInfo appInfo = new AppInfo();
+                                appInfo.setAppCaption(bootApp.caption());
+                                appInfo.setAppName(bootApp.name());
+                                appInfo.setDescription(bootApp.description());
+                                appInfo.setOwner(bootApp.owner());
+                                appInfo.setUdcApp(bootApp.udcApp());
+                                appInfo.setBasePackage(Apps.getBasePackage());
+                                org.springframework.core.io.Resource resource = ResourceUtils.getAllClassPathResource((String)("META-INF/maven/**/" + appInfo.getAppName() + assembleJarName + "/**/pom.properties"));
+                                BuildInfo buildInfo = Apps.getBuildInfo(resource);
+                                appInfo.setBuildInfo(buildInfo);
+                                log.info("\u52a0\u8f7d\u5e94\u7528:{},INFO:{}", (Object)bootApp.name(), (Object)JsonUtils.toJson((Object)appInfo));
+                                onlineApps.put(appInfo.getAppName(), appInfo);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        log.error("", (Throwable)e);
+                    }
+                }
+            }
+        }
+        return onlineApps;
+    }
+
+    public static Integer getParametersLimit() {
+        Integer limit;
+        if (parameterLimit != null && parameterLimit > 0) {
+            return parameterLimit;
+        }
+        if (null != Apps.getEnvironment().getProperty("seeyon.mybatis.parametersLimit") && null != (limit = Integer.valueOf(Integer.parseInt(Apps.getEnvironment().getProperty("seeyon.mybatis.parametersLimit")))) && limit > 0) {
+            parameterLimit = limit;
+            return parameterLimit;
+        }
+        if (Apps.getDatabaseType() == DatabaseType.dm7 || Apps.getDatabaseType() == DatabaseType.dm8 || Apps.getDatabaseType() == DatabaseType.sqlserver || Apps.getDatabaseType() == DatabaseType.kingbasev8 || Apps.getDatabaseType() == DatabaseType.oracle || Apps.getDatabaseType() == DatabaseType.tidb) {
+            parameterLimit = 2048;
+            return parameterLimit;
+        }
+        if (Apps.getDatabaseType() == DatabaseType.postgresql) {
+            parameterLimit = 512;
+            return parameterLimit;
+        }
+        parameterLimit = FINAL_PARAMETERS_LIMIT;
+        return parameterLimit;
+    }
+
+    public static Map<String, BuildInfo> depends() {
+        LinkedHashMap<String, BuildInfo> result = new LinkedHashMap<String, BuildInfo>();
+        if (!jarInfoMap.isEmpty()) {
+            result.putAll(currentAppJarInfoMap);
+            result.putAll(jarInfoMap);
+            return result;
+        }
+        org.springframework.core.io.Resource[] resources = ResourceUtils.getAllClassPathResources((String)"META-INF/maven/com.seeyon/**/pom.properties");
+        if (resources != null) {
+            for (org.springframework.core.io.Resource re : resources) {
+                try {
+                    BuildInfo buildInfo = Apps.getBuildInfo(re);
+                    if (buildInfo == null) continue;
+                    if (buildInfo.getArtifactId().contains(Apps.getAppName())) {
+                        currentAppJarInfoMap.put(buildInfo.getArtifactId(), buildInfo);
+                        continue;
+                    }
+                    jarInfoMap.put(buildInfo.getArtifactId(), buildInfo);
+                }
+                catch (Exception exception) {
+                    // empty catch block
+                }
+            }
+        }
+        result.putAll(currentAppJarInfoMap);
+        result.putAll(jarInfoMap);
+        return result;
+    }
+
+    static {
+        onlineApps = new LinkedHashMap<String, AppInfo>();
+        USER_CTX = new ThreadLocal();
+        monolithic = false;
+        monolithicExt = false;
+        DATA_BASE_TYPE = null;
+        DATA_BASE_REAL_TYPE = null;
+        DATA_BASE_TRUNK_TYPE = null;
+        FINAL_PARAMETERS_LIMIT = Integer.MAX_VALUE;
+        jarInfoMap = new TreeMap<String, BuildInfo>((Comparator<String>)new /* Unavailable Anonymous Inner Class!! */);
+        currentAppJarInfoMap = new TreeMap<String, BuildInfo>((Comparator<String>)new /* Unavailable Anonymous Inner Class!! */);
+    }
+}

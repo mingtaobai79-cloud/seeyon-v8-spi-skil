@@ -1,0 +1,48 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.BaseResponse
+ *  com.seeyon.boot.transport.ListData
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.BaseResponse;
+import com.seeyon.boot.transport.ListData;
+import java.util.List;
+
+@DtoInfo(value="\u5217\u8868\u54cd\u5e94\u5bf9\u8c61")
+public class ListResponse<T>
+extends BaseResponse {
+    private static final long serialVersionUID = 4195100078561463788L;
+    @DtoAttribute(value="\u8fd4\u56de\u503c\u6570\u636e")
+    private ListData<T> data;
+
+    public static <T> ListResponse<T> from(List<T> dtoList) {
+        ListResponse<T> response = new ListResponse<T>();
+        response.setData(ListData.from(dtoList));
+        return response;
+    }
+
+    public String toString() {
+        return "ListResponse size: " + (this.data == null || this.data.getContent() == null ? 0 : this.data.getContent().size());
+    }
+
+    public static ListResponse buildProcessingResponse() {
+        ListResponse response = new ListResponse();
+        response.setStatus(-1);
+        return response;
+    }
+
+    public ListData<T> getData() {
+        return this.data;
+    }
+
+    public void setData(ListData<T> data) {
+        this.data = data;
+    }
+}

@@ -1,0 +1,47 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.BaseResponse
+ *  com.seeyon.boot.transport.PageData
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.BaseResponse;
+import com.seeyon.boot.transport.PageData;
+
+@DtoInfo(value="\u5206\u9875\u54cd\u5e94\u5bf9\u8c61")
+public class PageResponse<T>
+extends BaseResponse {
+    private static final long serialVersionUID = -9209970929231794099L;
+    @DtoAttribute(value="\u8fd4\u56de\u503c\u6570\u636e")
+    private PageData<T> data;
+
+    public static <T> PageResponse<T> from(PageData<T> pageData) {
+        PageResponse<T> response = new PageResponse<T>();
+        response.setData(pageData);
+        return response;
+    }
+
+    public String toString() {
+        return "PageResponse size: " + (this.data == null || this.data.getPageInfo() == null ? Integer.valueOf(0) : this.data.getPageInfo().getPageNumber() + "/" + this.data.getPageInfo().getPages());
+    }
+
+    public static PageResponse buildProcessingResponse() {
+        PageResponse response = new PageResponse();
+        response.setStatus(-1);
+        return response;
+    }
+
+    public PageData<T> getData() {
+        return this.data;
+    }
+
+    public void setData(PageData<T> data) {
+        this.data = data;
+    }
+}

@@ -1,0 +1,43 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.BaseDto
+ *  com.seeyon.boot.transport.BaseRequest
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.BaseDto;
+import com.seeyon.boot.transport.BaseRequest;
+
+@DtoInfo(value="\u8bf7\u6c42\u5bf9\u8c61")
+public class SingleRequest<T>
+extends BaseRequest {
+    private static final long serialVersionUID = -7316199264902117005L;
+    @DtoAttribute(value="\u8bf7\u6c42\u53c2\u6570\u6570\u636e")
+    private T data;
+
+    public static <T> SingleRequest<T> from(T dto) {
+        SingleRequest<T> request = new SingleRequest<T>();
+        request.setData(dto);
+        return request;
+    }
+
+    public void check() {
+        if (this.data instanceof BaseDto) {
+            ((BaseDto)this.data).check();
+        }
+    }
+
+    public T getData() {
+        return this.data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+}

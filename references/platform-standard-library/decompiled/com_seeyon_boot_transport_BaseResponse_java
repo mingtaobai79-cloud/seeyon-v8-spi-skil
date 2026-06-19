@@ -1,0 +1,124 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.fasterxml.jackson.databind.JsonMappingException
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.context.RequestContext
+ *  com.seeyon.boot.exception.BootException
+ *  com.seeyon.boot.exception.BusinessException
+ *  com.seeyon.boot.transport.SingleResponse
+ *  com.seeyon.boot.util.StringUtils
+ *  com.seeyon.boot.util.ToStringUtils
+ */
+package com.seeyon.boot.transport;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.context.RequestContext;
+import com.seeyon.boot.exception.BootException;
+import com.seeyon.boot.exception.BusinessException;
+import com.seeyon.boot.transport.SingleResponse;
+import com.seeyon.boot.util.StringUtils;
+import com.seeyon.boot.util.ToStringUtils;
+import java.io.Serializable;
+
+@DtoInfo(value="\u54cd\u5e94\u57fa\u7840\u7c7b")
+public abstract class BaseResponse
+implements Serializable {
+    private static final long serialVersionUID = 7849116577617831908L;
+    @DtoAttribute(value="\u72b6\u6001", example="FRONT")
+    private int status;
+    @DtoAttribute(value="\u9519\u8bef\u7801", example="200")
+    private String code;
+    @DtoAttribute(value="\u8fd4\u56de\u4fe1\u606f", example="\u6210\u529f")
+    private String message;
+    @DtoAttribute(value="\u94fe\u8defID", example="123456")
+    private String traceId;
+
+    public BaseResponse() {
+        this.status = 0;
+        this.code = "BOOT_0000";
+        this.message = "SUCCESS";
+        this.traceId = StringUtils.isNotBlank((CharSequence)RequestContext.get().getTraceId()) ? RequestContext.get().getTraceId() : "n/a";
+    }
+
+    public boolean success() {
+        return this.status == 0;
+    }
+
+    public boolean failure() {
+        return this.status == 2;
+    }
+
+    public boolean processing() {
+        return this.status == -1;
+    }
+
+    public String toString() {
+        return ToStringUtils.toString((Object)this);
+    }
+
+    public static BaseResponse buildResponse(Exception e) {
+        SingleResponse response = new SingleResponse();
+        if (e instanceof BusinessException) {
+            response.setStatus(2);
+            response.setCode(((BusinessException)e).code());
+            response.setMessage(((BusinessException)e).message());
+        } else if (e instanceof JsonMappingException) {
+            response.setStatus(1);
+            response.setCode("BOOT_3002");
+            response.setMessage(e.getMessage());
+        } else if (e instanceof BootException) {
+            response.setStatus(2);
+            response.setCode(((BootException)e).code());
+            response.setMessage(((BootException)e).message());
+        } else {
+            response.setStatus(3);
+            response.setCode("BOOT_3000");
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    public int getStatus() {
+        return this.status;
+    }
+
+    public String getCode() {
+        return this.code;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public String getTraceId() {
+        return this.traceId;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
+    public BaseResponse(int status, String code, String message, String traceId) {
+        this.status = status;
+        this.code = code;
+        this.message = message;
+        this.traceId = traceId;
+    }
+}

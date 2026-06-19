@@ -1,0 +1,236 @@
+# Contract Discovery（接口契约发现）
+
+> **Rule-000: Contract First，但不是 Jar First。优先查可验证的外部契约索引；外部索引未命中，再查本地轻量 jar index；最后才 targeted jar probe / Version Matrix。**
+
+## 触发条件
+
+以下任一条件满足时，**跳过 Version Matrix，直接走 Contract Discovery**：
+
+1. 用户提供了 `ctp-user-api-*.jar` 文件路径
+2. 用户提供了 `cip-connector-api-*.jar` 文件路径
+3. 用户提供了包含 SPI 接口的源码目录
+4. 用户提供了反编译的接口代码（paste 文本）
+5. 用户提供了 Swagger/OpenAPI/接口平台/文档索引/MCP 地址
+
+## External Index First
+
+Contract Discovery 的默认入口不是整包反编译 jar，而是按顺序查询：
+
+1. `config/external-indexes.yaml` 中 enabled 的 Swagger/OpenAPI/MCP/HTTP 外部索引。
+2. `references/contract-index/` 中已有本地轻量 jar index。
+3. 用户本次提供 jar 的 targeted probe：只扫目标 class/method/package。
+4. Version Matrix / 手工推断。
+
+禁止项：
+
+- 禁止把几百 MB jar、完整 Swagger 正文、完整反编译源码塞进 skill。
+- 禁止外部索引 exact match 已命中时继续手搓接口。
+- 禁止没有 source/evidence 的手写契约。
+
+外部索引设计详见：`references/contract-index/external-contract-index.md`
+
+## Contract Index 优先策略
+
+当本 skill 已经存在外部索引配置或 `references/contract-index/` 时，Contract Discovery 不应默认重新反编译。
+
+优先级：
+
+1. **用户提供 Swagger/OpenAPI/MCP/HTTP 索引地址，或配置中已有 enabled 外部源**
+   - 先查外部索引。
+   - exact match 命中：证据等级为 FACT ✅，直接作为 Contract Source。
+   - 未命中：继续查本地 jar index。
+
+2. **用户提供 jar 文件**
+   - 先计算 sha256 并执行：
+     ```bash
+     python references/contract-index/tools/decompile_jar.py index C:/path/xxx.jar
+     ```
+   - 如果 sha256 已存在，直接命中索引，不重复反编译。
+   - 如果 sha256 不存在，且 jar 很大，优先 targeted probe，不默认整包反编译。
+   - 只有确实需要完整 Contract Bundle 时，才 CFR 反编译并写入轻量索引。
+
+3. **用户提供 jar 目录 / 初期批量资料**
+   - 执行：
+     ```bash
+     python references/contract-index/tools/decompile_jar.py index-dir C:/path/to/jars --pattern "*.jar"
+     ```
+   - 只导入轻量事实索引，不保留完整反编译源码。
+   - 大 jar 先 scan/probe 目标包，不做全量入库。
+
+4. **用户没有 jar，但提供 artifact/version**
+   - 先查外部索引和 aliases/index 是否已有 exact version。
+   - 命中 exact indexed contract：证据等级为 FACT ✅。
+   - 未命中 exact version，才查看 Version Matrix；相邻版本只能标 OBSERVATION ⚠️ 或 HYPOTHESIS ❓。
+
+5. **生成代码前**
+   - 优先使用外部索引 / 本地轻量索引查询。
+   - 不要把“重新反编译”当成默认动作；索引命中才是默认动作。
+
+索引设计详见：`references/contract-index/jar-contract-indexing-plan.md`
+
+## 提取流程
+
+### Step 1: 定位 jar 或源码
+
+```
+用户提供 jar 路径？
+  → 用 javap 或反编译工具提取接口
+  → jar tf xxx.jar | grep -i "api.*Service.class"
+
+用户提供源码目录？
+  → 搜索 interface 文件
+  → find . -name "*.java" | xargs grep "public interface"
+
+用户 paste 了接口代码？
+  → 直接解析
+```
+
+### Step 2: 提取 SPI Contract
+
+从接口中提取以下信息：
+
+```yaml
+contract:
+  # 接口全路径
+  interface: com.seeyon.ctp.user.api.sso.CtpUserSsoAuthProviderService
+
+  # 所有方法签名（区分必须实现 vs default）
+  methods:
+    required:
+      - name: getRequestParaKey
+        return: String
+        params: []
+      - name: getSsoLoginUrl
+        return: String
+        params: [HttpServletRequest, String]
+      - name: getUserLoginInfo
+        return: CtpUserSpiLoginUserInfoDto
+        params: [HttpServletRequest, String]
+        throws: [CtpUserSpiSsoException, SpiAuthContinueException]
+    optional:
+      - name: setServerEnv
+        return: void
+        params: [CtpUserSpiServerEnvDto]
+        default: true
+      # ... 更多 default 方法
+
+  # 关联 DTO
+  dto:
+    - CtpUserSpiLoginUserInfoDto
+    - CtpUserSpiServerEnvDto
+    - CtpUserSpiUserDto
+    - CtpUserSpiThirdTokenDto
+    - CtpUserSpiThirdLogoutDto
+
+  # 关联枚举
+  enums:
+    - CtpUserSpiAuthTokenEnum
+    - ShortLinkModeEnum
+
+  # 关联异常
+  exceptions:
+    - CtpUserSpiSsoException
+    - SpiAuthContinueException
+
+  # 关联注解
+  annotations:
+    - CtpUserChannelRouter
+    - CtpUserComment
+
+  # 注册资源
+  resources:
+    - spring.factories
+    - spi_info.json
+```
+
+### Step 3: 生成代码骨架
+
+基于提取的 Contract 生成代码，而不是基于 Version Matrix 的猜测：
+
+```java
+// 从 Contract 直接生成：
+// 1. 所有 required 方法 → 必须实现
+// 2. 所有 optional 方法 → 按需实现（生成注释说明）
+// 3. DTO 字段 → 从接口参数和返回值推断
+// 4. 异常处理 → 从 throws 子句推断
+```
+
+### Step 4: 版本标注
+
+从 jar 文件名或 POM 提取版本号，作为 **事实** 记录：
+
+```yaml
+version:
+  source: jar_filename  # 或 pom.xml 或 用户声明
+  value: 5.3.351
+  confidence: high  # jar 文件名 = high，用户口头说 = medium
+```
+
+## 反编译命令
+
+### 获取 CFR 反编译工具
+
+```bash
+# 推荐：从 Maven Central 下载（稳定可靠，GitHub Releases 在某些网络环境下超时）
+# URL: https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
+# Python urllib.request 可直接下载，约 2.1MB
+# 验证：文件头必须是 PK\x03\x04（ZIP/JAR 格式）
+```
+
+### 列出 jar 中的接口
+
+```bash
+jar tf ctp-user-api-5.3.351.jar | grep "api.*Service.class"
+```
+
+### 反编译整个 jar（推荐）
+
+```bash
+# CFR 反编译整个 jar 到输出目录
+java -jar cfr.jar target-api-x.x.x.jar --outputdir ./decompiled
+# 输出为 .java 文件，保留完整方法体、注解、泛型信息
+# 实测 cip-connector-api-5.3.286.jar → 119 个 .java 文件，6 秒完成
+```
+
+### 反编译单个类
+
+```bash
+# javap（只看签名，不需要下载额外工具）
+javap -classpath ctp-user-api-5.3.351.jar com.seeyon.ctp.user.api.sso.CtpUserSsoAuthProviderService
+```
+
+### 提取所有 SPI 接口
+
+```bash
+# 查找所有 api 包下的 Service 接口
+jar tf ctp-user-api-5.3.351.jar | grep "api.*\\.class$" | while read cls; do
+    classname=$(echo "$cls" | sed 's/\\.class$//' | tr '/' '.')
+    javap -classpath ctp-user-api-5.3.351.jar "$classname" 2>/dev/null | head -5
+done
+```
+
+## Contract 缓存
+
+提取后的 Contract 应该记录在生成输出的头部注释中：
+
+```java
+/**
+ * Generated by seeyon-v8-spi skill v4.0
+ *
+ * Contract Source: ctp-user-api-5.3.351.jar
+ * Interface: com.seeyon.ctp.user.api.sso.CtpUserSsoAuthProviderService
+ * Methods: 3 required, 12 optional
+ * Generated: 2026-06-12
+ *
+ * DO NOT modify method signatures — they must match the SPI contract.
+ */
+```
+
+## 降级策略
+
+如果用户没有提供 jar 或源码：
+
+1. 先追问："能提供 ctp-user-api 的 jar 文件路径吗？"
+2. 如果用户无法提供，降级到 Version Matrix（标记 confidence: low）
+3. 在生成代码的注释中标注："⚠️ 接口签名基于 Version Matrix 推断，建议用实际 jar 验证"
+

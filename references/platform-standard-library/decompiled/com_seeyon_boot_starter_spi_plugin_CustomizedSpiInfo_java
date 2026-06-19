@@ -1,0 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.starter.spi.plugin.CustomizedSpiInfo$SpiInfoModel
+ */
+package com.seeyon.boot.starter.spi.plugin;
+
+import com.seeyon.boot.starter.spi.plugin.CustomizedSpiInfo;
+import java.io.Serializable;
+import java.util.List;
+
+public class CustomizedSpiInfo
+implements Serializable {
+    public static final String CUSTOMIZED_SPI_CONFIG_PATH = "custom-backend/spi_info.json";
+    List<SpiInfoModel> spiInfoModels;
+
+    public void setSpiInfoModels(List<SpiInfoModel> spiInfoModels) {
+        this.spiInfoModels = spiInfoModels;
+    }
+
+    public List<SpiInfoModel> getSpiInfoModels() {
+        return this.spiInfoModels;
+    }
+}

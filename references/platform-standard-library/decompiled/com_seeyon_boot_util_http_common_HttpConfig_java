@@ -1,0 +1,303 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.util.StringUtils
+ *  com.seeyon.boot.util.http.common.HttpMethods
+ *  com.seeyon.boot.util.http.enums.HttpVersionEnum
+ *  com.seeyon.boot.util.http.model.FileStreamUploadModel
+ *  com.seeyon.boot.util.http.model.FileUploadModel
+ *  org.apache.http.Header
+ *  org.apache.http.client.HttpClient
+ *  org.apache.http.client.config.RequestConfig
+ *  org.apache.http.client.config.RequestConfig$Builder
+ *  org.apache.http.message.BasicHeader
+ *  org.apache.http.protocol.HttpContext
+ */
+package com.seeyon.boot.util.http.common;
+
+import com.seeyon.boot.util.StringUtils;
+import com.seeyon.boot.util.http.common.HttpMethods;
+import com.seeyon.boot.util.http.enums.HttpVersionEnum;
+import com.seeyon.boot.util.http.model.FileStreamUploadModel;
+import com.seeyon.boot.util.http.model.FileUploadModel;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.http.Header;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HttpContext;
+
+public class HttpConfig {
+    private HttpClient client;
+    private List<Header> headers;
+    private HttpMethods method = HttpMethods.GET;
+    private String methodName;
+    private HttpContext context;
+    private String json;
+    private String xml;
+    private String encoding = "UTF-8";
+    private String inenc;
+    private String outenc;
+    private RequestConfig requestConfig;
+    private RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+    private HttpVersionEnum httpVersion;
+    private OutputStream outs = null;
+    private String url = null;
+    private Map<String, Object> maps = new ConcurrentHashMap<String, Object>();
+    private InputStream putStream;
+
+    private HttpConfig() {
+    }
+
+    public static HttpConfig custom() {
+        return new HttpConfig();
+    }
+
+    public HttpConfig client(HttpClient client) {
+        this.client = client;
+        return this;
+    }
+
+    public HttpConfig url(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public HttpConfig httpVersion(HttpVersionEnum httpVersion) {
+        this.httpVersion = httpVersion;
+        return this;
+    }
+
+    public HttpVersionEnum httpVersion() {
+        return this.httpVersion;
+    }
+
+    public HttpConfig appendParams(Map<String, Object> params) {
+        if (params != null) {
+            String paramsStr = "";
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                if (entry.getValue() == null) continue;
+                paramsStr = paramsStr + entry.getKey() + "=" + this.encode(entry.getValue() + "") + "&";
+            }
+            if (StringUtils.isNotBlank((CharSequence)paramsStr)) {
+                if (paramsStr.endsWith("&")) {
+                    paramsStr = paramsStr.substring(0, paramsStr.length() - 1);
+                }
+                this.url = this.url.indexOf("?") > -1 ? this.url + "&" + paramsStr : this.url + "?" + paramsStr;
+            }
+        }
+        return this;
+    }
+
+    private String encode(String v) {
+        try {
+            return URLEncoder.encode(v, "UTF-8");
+        }
+        catch (UnsupportedEncodingException unsupportedEncodingException) {
+            return v;
+        }
+    }
+
+    public HttpConfig headers(Header[] headers) {
+        if (this.headers == null) {
+            this.headers = new ArrayList<Header>(Arrays.asList(headers));
+        }
+        return this;
+    }
+
+    public HttpConfig headers(List<Header> headers) {
+        if (this.headers == null) {
+            this.headers = headers;
+        }
+        return this;
+    }
+
+    public HttpConfig headers(Map<String, String> headers) {
+        if (this.headers == null && headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                this.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        return this;
+    }
+
+    public HttpConfig addHeader(String name, String value) {
+        if (this.headers == null) {
+            this.headers = new ArrayList<Header>();
+        }
+        this.headers.add((Header)new BasicHeader(name, value));
+        return this;
+    }
+
+    public HttpConfig method(HttpMethods method) {
+        this.method = method;
+        return this;
+    }
+
+    public HttpConfig map(Map map) {
+        if (this.maps == null || map == null) {
+            for (Object key : map.keySet()) {
+                this.maps.put(key.toString(), map.get(key));
+            }
+        } else {
+            this.maps.putAll(map);
+        }
+        return this;
+    }
+
+    public HttpConfig json(String json) {
+        this.json = json;
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("$ENTITY_JSON$", json);
+        this.maps.putAll(map);
+        return this;
+    }
+
+    public HttpConfig xml(String xmlStr) {
+        this.xml = xmlStr;
+        return this;
+    }
+
+    public HttpConfig files(FileUploadModel[] files) {
+        return this.files(files, false);
+    }
+
+    public HttpConfig files(FileUploadModel[] files, boolean forceRemoveContentTypeChraset) {
+        HashMap<String, Object> m = new HashMap<String, Object>();
+        m.put("$ENTITY_MULTIPART$", files);
+        m.put("$ENTITY_MULTIPART$.rmCharset", forceRemoveContentTypeChraset);
+        this.maps.putAll(m);
+        return this;
+    }
+
+    public HttpConfig streams(FileStreamUploadModel[] streams) {
+        return this.streams(streams, false);
+    }
+
+    public HttpConfig stream(InputStream inputStream, String fileName) {
+        FileStreamUploadModel[] streams = new FileStreamUploadModel[]{new FileStreamUploadModel(inputStream, fileName)};
+        return this.streams(streams, false);
+    }
+
+    public HttpConfig streams(FileStreamUploadModel[] streams, boolean forceRemoveContentTypeChraset) {
+        HashMap<String, Object> m = new HashMap<String, Object>();
+        m.put("$ENTITY_INPUTSTREAM$", streams);
+        m.put("$ENTITY_INPUTSTREAM$.rmCharset", forceRemoveContentTypeChraset);
+        this.maps.putAll(m);
+        return this;
+    }
+
+    public HttpConfig putStream(InputStream inputStream) {
+        this.putStream = inputStream;
+        return this;
+    }
+
+    public InputStream getPutStream() {
+        return this.putStream;
+    }
+
+    public HttpConfig encoding(String encoding) {
+        this.inenc(encoding);
+        this.outenc(encoding);
+        this.encoding = encoding;
+        return this;
+    }
+
+    public HttpConfig inenc(String inenc) {
+        this.inenc = inenc;
+        return this;
+    }
+
+    public HttpConfig outenc(String outenc) {
+        this.outenc = outenc;
+        return this;
+    }
+
+    public HttpConfig out(OutputStream out) {
+        this.outs = out;
+        return this;
+    }
+
+    public HttpConfig timeout(int timeout) {
+        return this.timeout(timeout, true);
+    }
+
+    public HttpConfig timeout(int timeout, boolean redirectEnable) {
+        this.requestConfigBuilder.setConnectionRequestTimeout(timeout).setConnectTimeout(timeout).setSocketTimeout(timeout).setRedirectsEnabled(redirectEnable);
+        return this;
+    }
+
+    public HttpClient client() {
+        return this.client;
+    }
+
+    public Header[] headers() {
+        if (this.headers == null || this.headers.isEmpty()) {
+            return new Header[0];
+        }
+        return this.headers.toArray(new Header[0]);
+    }
+
+    public String url() {
+        return this.url;
+    }
+
+    public HttpMethods method() {
+        return this.method;
+    }
+
+    public String methodName() {
+        return this.methodName;
+    }
+
+    public HttpContext context() {
+        return this.context;
+    }
+
+    public Map<String, Object> map() {
+        return this.maps;
+    }
+
+    public String json() {
+        return this.json;
+    }
+
+    public String xml() {
+        return this.xml;
+    }
+
+    public String encoding() {
+        return this.encoding;
+    }
+
+    public String inenc() {
+        return this.inenc == null ? this.encoding : this.inenc;
+    }
+
+    public String outenc() {
+        return this.outenc == null ? this.encoding : this.outenc;
+    }
+
+    public OutputStream out() {
+        return this.outs;
+    }
+
+    public RequestConfig requestConfig() {
+        return this.requestConfig == null ? this.requestConfigBuilder.build() : this.requestConfig;
+    }
+
+    public HttpConfig ignoreCookie() {
+        this.requestConfigBuilder.setCookieSpec("ignoreCookies");
+        return this;
+    }
+}

@@ -1,0 +1,692 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.util.JsonUtils
+ *  com.seeyon.boot.util.StringUtils
+ *  com.seeyon.boot.util.http.HttpClientUtil$1
+ *  com.seeyon.boot.util.http.builder.HCB
+ *  com.seeyon.boot.util.http.common.HttpConfig
+ *  com.seeyon.boot.util.http.common.HttpHeader
+ *  com.seeyon.boot.util.http.common.HttpMethods
+ *  com.seeyon.boot.util.http.common.HttpResult
+ *  com.seeyon.boot.util.http.common.SSLs$SSLProtocolVersion
+ *  com.seeyon.boot.util.http.common.Utils
+ *  com.seeyon.boot.util.http.exception.HttpProcessException
+ *  com.seeyon.boot.util.http.loadbalance.HttpClientRoundRobinRouting
+ *  com.seeyon.boot.util.http.meter.HttpClientMetrics
+ *  com.seeyon.boot.util.http.model.FileStreamUploadModel
+ *  com.seeyon.boot.util.http.model.FileUploadModel
+ *  org.apache.http.Header
+ *  org.apache.http.HttpEntity
+ *  org.apache.http.HttpResponse
+ *  org.apache.http.ProtocolVersion
+ *  org.apache.http.client.HttpClient
+ *  org.apache.http.client.HttpRequestRetryHandler
+ *  org.apache.http.client.methods.CloseableHttpResponse
+ *  org.apache.http.client.methods.HttpDelete
+ *  org.apache.http.client.methods.HttpEntityEnclosingRequestBase
+ *  org.apache.http.client.methods.HttpGet
+ *  org.apache.http.client.methods.HttpPost
+ *  org.apache.http.client.methods.HttpPut
+ *  org.apache.http.client.methods.HttpRequestBase
+ *  org.apache.http.client.methods.HttpUriRequest
+ *  org.apache.http.conn.ConnectionKeepAliveStrategy
+ *  org.apache.http.entity.InputStreamEntity
+ *  org.apache.http.entity.StringEntity
+ *  org.apache.http.util.EntityUtils
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.http;
+
+import com.seeyon.boot.util.JsonUtils;
+import com.seeyon.boot.util.StringUtils;
+import com.seeyon.boot.util.http.HttpClientUtil;
+import com.seeyon.boot.util.http.builder.HCB;
+import com.seeyon.boot.util.http.common.HttpConfig;
+import com.seeyon.boot.util.http.common.HttpHeader;
+import com.seeyon.boot.util.http.common.HttpMethods;
+import com.seeyon.boot.util.http.common.HttpResult;
+import com.seeyon.boot.util.http.common.SSLs;
+import com.seeyon.boot.util.http.common.Utils;
+import com.seeyon.boot.util.http.exception.HttpProcessException;
+import com.seeyon.boot.util.http.loadbalance.HttpClientRoundRobinRouting;
+import com.seeyon.boot.util.http.meter.HttpClientMetrics;
+import com.seeyon.boot.util.http.model.FileStreamUploadModel;
+import com.seeyon.boot.util.http.model.FileUploadModel;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class HttpClientUtil {
+    private static final Logger log = LoggerFactory.getLogger(HttpClientUtil.class);
+    private static final int TIME_OUT = 15000;
+    private static final int KEEP_ALIVE_TIME_OUT = 60000;
+    private static HttpClient client4HTTP;
+    private static HttpClient client4HTTPS;
+    private static final SSLs.SSLProtocolVersion PROTOCOL_VERSION;
+
+    private static void create(HttpConfig config) throws HttpProcessException {
+        if (config.client() == null) {
+            String url = config.url().toLowerCase();
+            if (!url.startsWith("http")) {
+                String[] urls = url.split("://");
+                String newUrl = HttpClientRoundRobinRouting.choose((String)urls[0]) + "/" + urls[1];
+                config.url(newUrl);
+            }
+            if (config.url().toLowerCase().startsWith("https://")) {
+                config.client(client4HTTPS);
+            } else {
+                config.client(client4HTTP);
+            }
+        }
+    }
+
+    public static String get(String urlString, Charset customCharset) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name());
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, Charset customCharset, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name());
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString) {
+        HttpConfig config = HttpConfig.custom().url(urlString);
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().url(urlString).appendParams(params);
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, Map<String, Object> params, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).appendParams(params);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, Map<String, Object> params, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).appendParams(params).timeout(timeout);
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, Map<String, Object> params, int timeout, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).appendParams(params).timeout(timeout);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).timeout(timeout);
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, int timeout, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).timeout(timeout);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, Charset customCharset, int timeout, HttpHeader headers, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().encoding(customCharset.name()).url(urlString).timeout(timeout).headers(headers.build()).appendParams(params);
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, Charset customCharset, int timeout, HttpHeader headers, Map<String, Object> params, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().encoding(customCharset.name()).url(urlString).timeout(timeout).headers(headers.build()).appendParams(params);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, Charset customCharset, int timeout, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().encoding(customCharset.name()).url(urlString).timeout(timeout).headers(headers.build());
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, Charset customCharset, int timeout, HttpHeader headers, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().encoding(customCharset.name()).url(urlString).timeout(timeout).headers(headers.build());
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build());
+        return HttpClientUtil.get(config);
+    }
+
+    public static <T> T get(String urlString, HttpHeader headers, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build());
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(String urlString, HttpHeader headers, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).appendParams(params);
+        return HttpClientUtil.get(config);
+    }
+
+    public static Map<String, Object> getOverload(String urlString, HttpHeader headers, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).appendParams(params);
+        return HttpClientUtil.getOverload(config);
+    }
+
+    public static <T> T get(String urlString, HttpHeader headers, Map<String, Object> params, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).appendParams(params);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.get(config), clazz);
+    }
+
+    public static String get(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.send(config.method(HttpMethods.GET));
+    }
+
+    public static Map<String, Object> getOverload(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.sendOverload(config.method(HttpMethods.GET));
+    }
+
+    public static <T> T get(HttpConfig config, Class<T> clazz) throws HttpProcessException {
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.send(config.method(HttpMethods.GET)), clazz);
+    }
+
+    public static String delete(String urlString) {
+        HttpConfig config = HttpConfig.custom().url(urlString).method(HttpMethods.DELETE);
+        return HttpClientUtil.send(config);
+    }
+
+    public static String delete(String urlString, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).method(HttpMethods.DELETE);
+        return HttpClientUtil.send(config);
+    }
+
+    public static HttpResult delete(HttpConfig config) {
+        config.method(HttpMethods.DELETE);
+        return HttpClientUtil.sendAndGetResp(config);
+    }
+
+    public static String post(String urlString, Map<String, Object> paramMap) {
+        HttpConfig config = HttpConfig.custom().url(urlString).map(paramMap);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, Map<String, Object> paramMap, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).map(paramMap);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, Map<String, Object> paramMap, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).map(paramMap);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, Map<String, Object> paramMap, HttpHeader headers, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).map(paramMap);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, Map<String, Object> paramMap, HttpHeader headers, int timeout, Charset customCharset) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name()).headers(headers.build()).map(paramMap).timeout(timeout);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, Map<String, Object> paramMap, HttpHeader headers, int timeout, Charset customCharset, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name()).headers(headers.build()).map(paramMap).timeout(timeout);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, Map<String, Object> paramMap, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).map(paramMap).timeout(timeout);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, Map<String, Object> paramMap, int timeout, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).map(paramMap).timeout(timeout);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, String json) {
+        HttpConfig config = HttpConfig.custom().url(urlString).json(json);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, String json, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).json(json);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, String json, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).json(json);
+        return HttpClientUtil.post(config);
+    }
+
+    public static Map<String, Object> postOverload(String urlString, String json, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).json(json);
+        return HttpClientUtil.postOverload(config);
+    }
+
+    public static <T> T post(String urlString, String json, HttpHeader headers, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).json(json);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, String json, HttpHeader headers, int timeout, Charset customCharset) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name()).headers(headers.build()).json(json).timeout(timeout);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, String json, HttpHeader headers, int timeout, Charset customCharset, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name()).headers(headers.build()).json(json).timeout(timeout);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(String urlString, String json, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).json(json).timeout(timeout);
+        return HttpClientUtil.post(config);
+    }
+
+    public static <T> T post(String urlString, String json, int timeout, Class<T> clazz) {
+        HttpConfig config = HttpConfig.custom().url(urlString).json(json).timeout(timeout);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.post(config), clazz);
+    }
+
+    public static String post(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.send(config.method(HttpMethods.POST));
+    }
+
+    public static Map<String, Object> postOverload(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.sendOverload(config.method(HttpMethods.POST));
+    }
+
+    public static <T> T post(HttpConfig config, Class<T> clazz) throws HttpProcessException {
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.send(config.method(HttpMethods.POST)), clazz);
+    }
+
+    public static HttpResult sendGet(String urlString, Charset customCharset) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name());
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString) {
+        HttpConfig config = HttpConfig.custom().url(urlString);
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().url(urlString).appendParams(params);
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, Map<String, Object> params, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).appendParams(params).timeout(timeout);
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).timeout(timeout);
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, Charset customCharset, int timeout, HttpHeader headers, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().encoding(customCharset.name()).url(urlString).timeout(timeout).headers(headers.build()).appendParams(params);
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, Charset customCharset, int timeout, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().encoding(customCharset.name()).url(urlString).timeout(timeout).headers(headers.build());
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build());
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(String urlString, HttpHeader headers, Map<String, Object> params) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).appendParams(params);
+        return HttpClientUtil.sendGet(config);
+    }
+
+    public static HttpResult sendGet(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.sendAndGetResp(config.method(HttpMethods.GET));
+    }
+
+    public static HttpResult sendPost(String urlString, Map<String, Object> paramMap) {
+        HttpConfig config = HttpConfig.custom().url(urlString).map(paramMap);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, Map<String, Object> paramMap, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).map(paramMap);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, Map<String, Object> paramMap, HttpHeader headers, int timeout, Charset customCharset) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name()).headers(headers.build()).map(paramMap).timeout(timeout);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, Map<String, Object> paramMap, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).map(paramMap).timeout(timeout);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, String json) {
+        HttpConfig config = HttpConfig.custom().url(urlString).json(json);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, String json, HttpHeader headers) {
+        HttpConfig config = HttpConfig.custom().url(urlString).headers(headers.build()).json(json);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, String json, HttpHeader headers, int timeout, Charset customCharset) {
+        HttpConfig config = HttpConfig.custom().url(urlString).encoding(customCharset.name()).headers(headers.build()).json(json).timeout(timeout);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(String urlString, String json, int timeout) {
+        HttpConfig config = HttpConfig.custom().url(urlString).json(json).timeout(timeout);
+        return HttpClientUtil.sendPost(config);
+    }
+
+    public static HttpResult sendPost(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.sendAndGetResp(config.method(HttpMethods.POST));
+    }
+
+    public static OutputStream down(HttpConfig config) throws HttpProcessException {
+        if (config.method() == null) {
+            config.method(HttpMethods.GET);
+        }
+        return HttpClientUtil.fmt2Stream(HttpClientUtil.execute(config), config.out());
+    }
+
+    public static OutputStream down(String url, OutputStream out) throws HttpProcessException {
+        HttpConfig config = HttpConfig.custom().method(HttpMethods.GET).url(url).out(out);
+        return HttpClientUtil.fmt2Stream(HttpClientUtil.execute(config), config.out());
+    }
+
+    public static HttpResponse down(String url) throws HttpProcessException {
+        HttpConfig config = HttpConfig.custom().method(HttpMethods.GET).url(url);
+        return HttpClientUtil.execute(config);
+    }
+
+    public static InputStream downForInputStream(HttpConfig config) throws HttpProcessException {
+        if (config.method() == null) {
+            config.method(HttpMethods.GET);
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        config.out((OutputStream)out);
+        HttpClientUtil.fmt2Stream(HttpClientUtil.execute(config), config.out());
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    public static OutputStream down(String url, HttpHeader httpHeader, OutputStream out) throws HttpProcessException {
+        HttpConfig config = HttpConfig.custom().headers(httpHeader.build()).method(HttpMethods.GET).url(url).out(out);
+        return HttpClientUtil.fmt2Stream(HttpClientUtil.execute(config), config.out());
+    }
+
+    public static String upload(HttpConfig config) throws HttpProcessException {
+        if (config.method() != HttpMethods.POST) {
+            config.method(HttpMethods.POST);
+        }
+        return HttpClientUtil.send(config);
+    }
+
+    public static String upload(String url, InputStream fileStream, String fileName) throws HttpProcessException {
+        FileStreamUploadModel[] streams = new FileStreamUploadModel[]{new FileStreamUploadModel(fileStream, fileName)};
+        HttpConfig config = HttpConfig.custom().encoding("UTF-8").url(url).streams(streams);
+        return HttpClientUtil.upload(config);
+    }
+
+    public static String upload(String url, File file) throws HttpProcessException {
+        return HttpClientUtil.upload(url, file, file.getName());
+    }
+
+    public static String upload(String url, File file, String fileName) throws HttpProcessException {
+        FileUploadModel[] files = new FileUploadModel[]{new FileUploadModel(file.getAbsolutePath(), fileName)};
+        HttpConfig config = HttpConfig.custom().encoding("UTF-8").url(url).files(files);
+        return HttpClientUtil.upload(config);
+    }
+
+    public static <T> T upload(String url, InputStream fileStream, String fileName, Class<T> clazz) throws HttpProcessException {
+        FileStreamUploadModel[] streams = new FileStreamUploadModel[]{new FileStreamUploadModel(fileStream, fileName)};
+        HttpConfig config = HttpConfig.custom().encoding("UTF-8").url(url).streams(streams);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.upload(config), clazz);
+    }
+
+    public static <T> T upload(String url, File file, Class<T> clazz) throws HttpProcessException {
+        return HttpClientUtil.upload(url, file, file.getName(), clazz);
+    }
+
+    public static <T> T upload(String url, File file, String fileName, Class<T> clazz) throws HttpProcessException {
+        FileUploadModel[] files = new FileUploadModel[]{new FileUploadModel(file.getAbsolutePath(), fileName)};
+        HttpConfig config = HttpConfig.custom().encoding("UTF-8").url(url).files(files);
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.upload(config), clazz);
+    }
+
+    public static <T> T upload(HttpConfig config, Class<T> clazz) throws HttpProcessException {
+        if (config.method() != HttpMethods.POST) {
+            config.method(HttpMethods.POST);
+        }
+        return (T)JsonUtils.fromJson((String)HttpClientUtil.send(config), clazz);
+    }
+
+    public static HttpResult uploadAndGetResp(HttpConfig config) throws HttpProcessException {
+        if (config.method() != HttpMethods.POST) {
+            config.method(HttpMethods.POST);
+        }
+        return HttpClientUtil.sendAndGetResp(config);
+    }
+
+    public static HttpResult uploadAndGetResp(String url, InputStream fileStream, String fileName) throws HttpProcessException {
+        FileStreamUploadModel[] streams = new FileStreamUploadModel[]{new FileStreamUploadModel(fileStream, fileName)};
+        HttpConfig config = HttpConfig.custom().encoding("UTF-8").url(url).streams(streams);
+        return HttpClientUtil.uploadAndGetResp(config);
+    }
+
+    public static HttpResult uploadAndGetResp(String url, File file) throws HttpProcessException {
+        return HttpClientUtil.uploadAndGetResp(url, file, file.getName());
+    }
+
+    public static HttpResult uploadAndGetResp(String url, File file, String fileName) throws HttpProcessException {
+        FileUploadModel[] files = new FileUploadModel[]{new FileUploadModel(file.getAbsolutePath(), fileName)};
+        HttpConfig config = HttpConfig.custom().encoding("UTF-8").url(url).files(files);
+        return HttpClientUtil.uploadAndGetResp(config);
+    }
+
+    public static HttpResult put(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.sendAndGetResp(config.method(HttpMethods.PUT));
+    }
+
+    public static int status(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.fmt2Int(HttpClientUtil.execute(config));
+    }
+
+    private static String send(HttpConfig config) throws HttpProcessException {
+        return HttpClientUtil.fmt2String(HttpClientUtil.execute(config), config.outenc());
+    }
+
+    private static Map<String, Object> sendOverload(HttpConfig config) throws HttpProcessException {
+        HttpResponse response = HttpClientUtil.execute(config);
+        HashMap<String, Object> res = new HashMap<String, Object>();
+        res.put("response", response);
+        res.put("data", HttpClientUtil.fmt2String(response, config.outenc()));
+        return res;
+    }
+
+    private static HttpResult sendAndGetResp(HttpConfig config) throws HttpProcessException {
+        Header[] reqHeaders = config.headers();
+        HttpResponse resp = HttpClientUtil.execute(config);
+        HttpResult result = new HttpResult(resp);
+        result.setResult(HttpClientUtil.fmt2String(resp, config.outenc()));
+        result.setReqHeaders(reqHeaders);
+        return result;
+    }
+
+    private static HttpResponse execute(HttpConfig config) throws HttpProcessException {
+        HttpClientUtil.create(config);
+        HttpResponse resp = null;
+        try {
+            HttpRequestBase request = HttpClientUtil.getRequest(config);
+            request.setConfig(config.requestConfig());
+            request.setHeaders(config.headers());
+            if (HttpEntityEnclosingRequestBase.class.isAssignableFrom(request.getClass())) {
+                if (StringUtils.isNotBlank((CharSequence)config.xml())) {
+                    StringEntity entity = new StringEntity(config.xml(), config.encoding());
+                    String contentType = "text/xml";
+                    if (StringUtils.isNotBlank((CharSequence)config.encoding())) {
+                        contentType = contentType + ";charset=" + config.encoding();
+                    }
+                    entity.setContentType(contentType);
+                    ((HttpEntityEnclosingRequestBase)request).setEntity((HttpEntity)entity);
+                } else {
+                    InputStreamEntity entity = null;
+                    if (HttpMethods.PUT == config.method() && config.getPutStream() != null) {
+                        entity = new InputStreamEntity(config.getPutStream());
+                    } else {
+                        ArrayList nvps = new ArrayList();
+                        if (request.getClass() == HttpGet.class) {
+                            config.url(Utils.checkHasParas((String)config.url(), nvps, (String)config.inenc()));
+                        }
+                        entity = Utils.map2HttpEntity(nvps, (Map)config.map(), (String)config.inenc());
+                    }
+                    ((HttpEntityEnclosingRequestBase)request).setEntity((HttpEntity)entity);
+                }
+            } else {
+                int idx = config.url().indexOf("?");
+                log.debug("\u8bf7\u6c42\u5730\u5740\uff1a" + config.url().substring(0, idx > 0 ? idx : config.url().length()));
+            }
+            resp = config.context() == null ? config.client().execute((HttpUriRequest)request) : config.client().execute((HttpUriRequest)request, config.context());
+            HttpClientMetrics.success();
+            return resp;
+        }
+        catch (IOException e) {
+            HttpClientMetrics.fail();
+            throw new HttpProcessException("", (Exception)e);
+        }
+    }
+
+    private static String fmt2String(HttpResponse resp, String encoding) throws HttpProcessException {
+        String body = "";
+        try {
+            if (resp.getEntity() != null) {
+                body = EntityUtils.toString((HttpEntity)resp.getEntity(), (String)encoding);
+                log.debug(body);
+            } else {
+                body = resp.getStatusLine().toString();
+            }
+            EntityUtils.consume((HttpEntity)resp.getEntity());
+        }
+        catch (IOException e) {
+            throw new HttpProcessException("", (Exception)e);
+        }
+        finally {
+            HttpClientUtil.close(resp);
+        }
+        return body;
+    }
+
+    private static int fmt2Int(HttpResponse resp) throws HttpProcessException {
+        int statusCode;
+        try {
+            statusCode = resp.getStatusLine().getStatusCode();
+            EntityUtils.consume((HttpEntity)resp.getEntity());
+        }
+        catch (IOException e) {
+            throw new HttpProcessException("", (Exception)e);
+        }
+        finally {
+            HttpClientUtil.close(resp);
+        }
+        return statusCode;
+    }
+
+    private static OutputStream fmt2Stream(HttpResponse resp, OutputStream out) throws HttpProcessException {
+        try {
+            resp.getEntity().writeTo(out);
+            EntityUtils.consume((HttpEntity)resp.getEntity());
+        }
+        catch (IOException e) {
+            throw new HttpProcessException("", (Exception)e);
+        }
+        finally {
+            HttpClientUtil.close(resp);
+        }
+        return out;
+    }
+
+    private static HttpRequestBase getRequest(HttpConfig config) {
+        HttpGet request = null;
+        switch (config.method().getCode()) {
+            case 0: {
+                request = new HttpGet(config.url());
+                break;
+            }
+            case 3: {
+                request = new HttpPut(config.url());
+                break;
+            }
+            case 4: {
+                request = new HttpDelete(config.url());
+                break;
+            }
+            default: {
+                request = new HttpPost(config.url());
+            }
+        }
+        if (request != null && config.httpVersion() != null) {
+            request.setProtocolVersion((ProtocolVersion)config.httpVersion().httpVersion());
+        }
+        return request;
+    }
+
+    private static void close(HttpResponse resp) {
+        try {
+            if (resp == null) {
+                return;
+            }
+            if (CloseableHttpResponse.class.isAssignableFrom(resp.getClass())) {
+                ((CloseableHttpResponse)resp).close();
+            }
+        }
+        catch (IOException e) {
+            log.error("", (Throwable)e);
+        }
+    }
+
+    static {
+        PROTOCOL_VERSION = SSLs.SSLProtocolVersion.TLS;
+        1 retryHandler = new /* Unavailable Anonymous Inner Class!! */;
+        client4HTTP = HCB.custom().pool(5000, 1000).timeout(15000).useSystemProperties().setUserAgent("Mozilla/5.0").useSystemProperties().setKeepAliveStrategy((ConnectionKeepAliveStrategy)new /* Unavailable Anonymous Inner Class!! */).setRetryHandler((HttpRequestRetryHandler)retryHandler).build();
+        client4HTTPS = HCB.custom().pool(2000, 1000, PROTOCOL_VERSION).timeout(15000).ssl(PROTOCOL_VERSION).useSystemProperties().setUserAgent("Mozilla/5.0").setKeepAliveStrategy((ConnectionKeepAliveStrategy)new /* Unavailable Anonymous Inner Class!! */).setRetryHandler((HttpRequestRetryHandler)retryHandler).build();
+    }
+}

@@ -1,0 +1,21 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.springframework.core.env.Environment
+ */
+package com.seeyon.boot.context;
+
+import org.springframework.core.env.Environment;
+
+public class EnvironmentHolder {
+    private static Environment environment;
+
+    public static Environment get() {
+        return environment;
+    }
+
+    public static void set(Environment environment) {
+        EnvironmentHolder.environment = environment;
+    }
+}

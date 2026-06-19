@@ -1,0 +1,66 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.ListRequest
+ *  com.seeyon.boot.transport.PageInfo
+ *  com.seeyon.boot.transport.Sort
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.ListRequest;
+import com.seeyon.boot.transport.PageInfo;
+import com.seeyon.boot.transport.Sort;
+import java.util.HashMap;
+import java.util.Map;
+
+@DtoInfo(value="\u5206\u9875\u6761\u4ef6\u5bf9\u8c61")
+public class PageRequest
+extends ListRequest {
+    private static final long serialVersionUID = -1988399523430606312L;
+    @DtoAttribute(value="\u5206\u9875")
+    private PageInfo pageInfo;
+
+    public static PageRequest from() {
+        return PageRequest.from(new PageInfo(), null);
+    }
+
+    public static PageRequest from(PageInfo pageInfo) {
+        PageRequest request = new PageRequest();
+        request.setPageInfo(pageInfo);
+        request.setParams(new HashMap(0));
+        return request;
+    }
+
+    public static PageRequest from(PageInfo pageInfo, Map<String, Object> map) {
+        PageRequest request = new PageRequest();
+        request.setPageInfo(pageInfo);
+        request.setParams(map);
+        return request;
+    }
+
+    public static PageRequest from(PageInfo pageInfo, Map<String, Object> map, Sort sort) {
+        PageRequest request = new PageRequest();
+        request.setPageInfo(pageInfo);
+        request.setParams(map);
+        request.setSort(sort);
+        return request;
+    }
+
+    public PageRequest addParam(String paramKey, Object paramValue) {
+        super.addParam(paramKey, paramValue);
+        return this;
+    }
+
+    public PageInfo getPageInfo() {
+        return this.pageInfo;
+    }
+
+    public void setPageInfo(PageInfo pageInfo) {
+        this.pageInfo = pageInfo;
+    }
+}

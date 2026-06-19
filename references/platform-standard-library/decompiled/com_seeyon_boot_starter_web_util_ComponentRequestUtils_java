@@ -1,0 +1,76 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.context.Apps
+ *  com.seeyon.boot.starter.web.BaseComponentController
+ *  com.seeyon.boot.starter.web.servlet.SeeyonModifyUriRequestWrapper
+ *  com.seeyon.boot.util.StringUtils
+ *  javax.servlet.http.HttpServletRequest
+ *  org.springframework.web.method.HandlerMethod
+ *  org.springframework.web.servlet.HandlerExecutionChain
+ *  org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+ */
+package com.seeyon.boot.starter.web.util;
+
+import com.seeyon.boot.context.Apps;
+import com.seeyon.boot.starter.web.BaseComponentController;
+import com.seeyon.boot.starter.web.servlet.SeeyonModifyUriRequestWrapper;
+import com.seeyon.boot.util.StringUtils;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerExecutionChain;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+public class ComponentRequestUtils {
+    private static RequestMappingHandlerMapping handlers;
+    private static Map<String, Boolean> CACHE;
+
+    private static RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+        if (handlers == null) {
+            handlers = (RequestMappingHandlerMapping)Apps.getApplicationContext().getBean("requestMappingHandlerMapping");
+        }
+        return handlers;
+    }
+
+    public static boolean isComponentRequestForMultiAppGraphql(HttpServletRequest request) {
+        String key = request.getRequestURI() + request.getMethod();
+        if (CACHE.containsKey(key)) {
+            return CACHE.get(key);
+        }
+        String requestURI = request.getRequestURI();
+        String appName = Stream.of(requestURI.split("/")).filter(p -> StringUtils.isNotBlank((CharSequence)p)).findFirst().get();
+        String replaceUri = requestURI.replace("/" + appName + "/", Apps.getAppName());
+        SeeyonModifyUriRequestWrapper seeyonModifyUriRequestWrapper = new SeeyonModifyUriRequestWrapper(request, replaceUri);
+        boolean componentRequest = ComponentRequestUtils.isComponentRequest((HttpServletRequest)seeyonModifyUriRequestWrapper);
+        CACHE.put(key, componentRequest);
+        return componentRequest;
+    }
+
+    public static boolean isComponentRequest(HttpServletRequest request) {
+        String key = request.getRequestURI() + request.getMethod();
+        if (CACHE.containsKey(key)) {
+            return CACHE.get(key);
+        }
+        try {
+            HandlerExecutionChain chain = ComponentRequestUtils.getRequestMappingHandlerMapping().getHandler(request);
+            if (chain != null) {
+                HandlerMethod handlerMethod = (HandlerMethod)chain.getHandler();
+                boolean assignableFrom = BaseComponentController.class.isAssignableFrom(handlerMethod.getMethod().getDeclaringClass());
+                CACHE.put(key, assignableFrom);
+                return assignableFrom;
+            }
+        }
+        catch (Throwable throwable) {
+            // empty catch block
+        }
+        return false;
+    }
+
+    static {
+        CACHE = new ConcurrentHashMap<String, Boolean>();
+    }
+}

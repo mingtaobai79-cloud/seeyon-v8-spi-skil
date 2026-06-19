@@ -1,0 +1,109 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+ *  org.springframework.boot.context.properties.ConfigurationProperties
+ *  org.springframework.context.annotation.Configuration
+ */
+package com.seeyon.boot.starter.spi.plugin.maven;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix="seeyon.dynamic.loader.maven")
+@ConditionalOnProperty(prefix="seeyon.dynamic.loader", name={"type"}, havingValue="maven")
+public class SpiMavenProperties {
+    public static final String PREFIX = "seeyon.dynamic.loader.maven";
+    private String snapshotUrl;
+    private String releaseUrl;
+    private String username;
+    private String password;
+
+    public String getSnapshotUrl() {
+        return this.snapshotUrl;
+    }
+
+    public String getReleaseUrl() {
+        return this.releaseUrl;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public void setSnapshotUrl(String snapshotUrl) {
+        this.snapshotUrl = snapshotUrl;
+    }
+
+    public void setReleaseUrl(String releaseUrl) {
+        this.releaseUrl = releaseUrl;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof SpiMavenProperties)) {
+            return false;
+        }
+        SpiMavenProperties other = (SpiMavenProperties)o;
+        if (!other.canEqual(this)) {
+            return false;
+        }
+        String this$snapshotUrl = this.getSnapshotUrl();
+        String other$snapshotUrl = other.getSnapshotUrl();
+        if (this$snapshotUrl == null ? other$snapshotUrl != null : !this$snapshotUrl.equals(other$snapshotUrl)) {
+            return false;
+        }
+        String this$releaseUrl = this.getReleaseUrl();
+        String other$releaseUrl = other.getReleaseUrl();
+        if (this$releaseUrl == null ? other$releaseUrl != null : !this$releaseUrl.equals(other$releaseUrl)) {
+            return false;
+        }
+        String this$username = this.getUsername();
+        String other$username = other.getUsername();
+        if (this$username == null ? other$username != null : !this$username.equals(other$username)) {
+            return false;
+        }
+        String this$password = this.getPassword();
+        String other$password = other.getPassword();
+        return !(this$password == null ? other$password != null : !this$password.equals(other$password));
+    }
+
+    protected boolean canEqual(Object other) {
+        return other instanceof SpiMavenProperties;
+    }
+
+    public int hashCode() {
+        int PRIME = 59;
+        int result = 1;
+        String $snapshotUrl = this.getSnapshotUrl();
+        result = result * 59 + ($snapshotUrl == null ? 43 : $snapshotUrl.hashCode());
+        String $releaseUrl = this.getReleaseUrl();
+        result = result * 59 + ($releaseUrl == null ? 43 : $releaseUrl.hashCode());
+        String $username = this.getUsername();
+        result = result * 59 + ($username == null ? 43 : $username.hashCode());
+        String $password = this.getPassword();
+        result = result * 59 + ($password == null ? 43 : $password.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "SpiMavenProperties(snapshotUrl=" + this.getSnapshotUrl() + ", releaseUrl=" + this.getReleaseUrl() + ", username=" + this.getUsername() + ", password=" + this.getPassword() + ")";
+    }
+}

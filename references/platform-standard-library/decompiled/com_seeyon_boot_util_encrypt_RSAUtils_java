@@ -1,0 +1,128 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.exception.BusinessException
+ *  org.apache.commons.codec.binary.Base64
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.encrypt;
+
+import com.seeyon.boot.exception.BusinessException;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import javax.crypto.Cipher;
+import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class RSAUtils {
+    private static final Logger log = LoggerFactory.getLogger(RSAUtils.class);
+    private static final String RSA = "RSA";
+    private static final int MAX_ENCRYPT_BLOCK = 117;
+    private static final int MAX_DECRYPT_BLOCK = 128;
+    private static final int DEFAULT_KEY_SIZE = 1024;
+    private static final String EN_CODING = "UTF-8";
+
+    public static KeyPair generateKey() {
+        try {
+            KeyPairGenerator pairgen = KeyPairGenerator.getInstance(RSA);
+            SecureRandom random = new SecureRandom();
+            pairgen.initialize(1024, random);
+            return pairgen.generateKeyPair();
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String keyEncrypt(Key key) {
+        return new String(Base64.encodeBase64((byte[])key.getEncoded()));
+    }
+
+    public static String encrypt(byte[] clearText, PublicKey publicKey) {
+        return RSAUtils.encrypt(clearText, RSAUtils.keyEncrypt(publicKey));
+    }
+
+    public static String encrypt(String clearText, PublicKey publicKey) {
+        try {
+            return RSAUtils.encrypt(clearText.getBytes(EN_CODING), RSAUtils.keyEncrypt(publicKey));
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+    }
+
+    public static String encrypt(String clearText, String publicKey) throws Exception {
+        return RSAUtils.encrypt(clearText.getBytes(EN_CODING), publicKey);
+    }
+
+    public static String encrypt(byte[] clearText, String publicKey) {
+        try {
+            byte[] decoded = Base64.decodeBase64((String)publicKey);
+            RSAPublicKey pubKey = (RSAPublicKey)KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(decoded));
+            Cipher cipher = Cipher.getInstance(RSA);
+            cipher.init(1, pubKey);
+            int inputLen = clearText.length;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            int offSet = 0;
+            int i = 0;
+            while (inputLen - offSet > 0) {
+                byte[] cache = inputLen - offSet > 117 ? cipher.doFinal(clearText, offSet, 117) : cipher.doFinal(clearText, offSet, inputLen - offSet);
+                out.write(cache, 0, cache.length);
+                offSet = ++i * 117;
+            }
+            return Base64.encodeBase64String((byte[])out.toByteArray());
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+    }
+
+    public static byte[] decrypt2Byte(String cipherText, String privateKey) {
+        try {
+            byte[] inputByte = Base64.decodeBase64((byte[])cipherText.getBytes(EN_CODING));
+            byte[] decoded = Base64.decodeBase64((String)privateKey);
+            RSAPrivateKey priKey = (RSAPrivateKey)KeyFactory.getInstance(RSA).generatePrivate(new PKCS8EncodedKeySpec(decoded));
+            Cipher cipher = Cipher.getInstance(RSA);
+            cipher.init(2, priKey);
+            int inputLen = inputByte.length;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            int offSet = 0;
+            int i = 0;
+            while (inputLen - offSet > 0) {
+                byte[] cache = inputLen - offSet > 128 ? cipher.doFinal(inputByte, offSet, 128) : cipher.doFinal(inputByte, offSet, inputLen - offSet);
+                out.write(cache, 0, cache.length);
+                offSet = ++i * 128;
+            }
+            return out.toByteArray();
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2200", (Throwable)e);
+        }
+    }
+
+    public static String decrypt(String cipherText, String privateKey) {
+        return new String(RSAUtils.decrypt2Byte(cipherText, privateKey));
+    }
+
+    public static String decrypt(String cipherText, PrivateKey privateKey) {
+        return RSAUtils.decrypt(cipherText, RSAUtils.keyEncrypt(privateKey));
+    }
+
+    public static byte[] decrypt2Byte(String cipherText, PrivateKey privateKey) {
+        return RSAUtils.decrypt2Byte(cipherText, RSAUtils.keyEncrypt(privateKey));
+    }
+}

@@ -1,0 +1,164 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.common.Constants
+ *  com.seeyon.boot.conifg.CommonLogProperties
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.context;
+
+import com.seeyon.boot.common.Constants;
+import com.seeyon.boot.conifg.CommonLogProperties;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class RequestContext {
+    private static final Logger log = LoggerFactory.getLogger(RequestContext.class);
+    private static ThreadLocal<RequestContext> LOCAL = ThreadLocal.withInitial(() -> new RequestContext());
+    private Long tenantId;
+    private String traceId;
+    private String clientIp;
+    private String userAgent;
+    private Long userId;
+    private Long loginOrgId;
+    private Integer graphql = 0;
+    private String grayTag;
+    private String dynamicName;
+    private Integer secretLevel = -1;
+    private String sandBoxTag;
+    private String sourceAppName;
+    private Map<String, String> customPassThrough;
+
+    public Long getUserId() {
+        return this.userId == null ? Constants.DEFAULT_ID : this.userId;
+    }
+
+    @Deprecated
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public void setTraceId(String traceId) {
+        if (CommonLogProperties.getEnableConsoleStack().booleanValue()) {
+            log.error("set traceId is {}", (Object)traceId);
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            if (stackTrace.length > 2) {
+                StackTraceElement caller = stackTrace[2];
+                log.info(String.format("Called by %s.%s (line %d)%n", caller.getClassName(), caller.getMethodName(), caller.getLineNumber()));
+            }
+        }
+        this.traceId = traceId;
+    }
+
+    public void setClientIp(String clientIp) {
+        this.clientIp = clientIp;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setLoginOrgId(Long loginOrgId) {
+        this.loginOrgId = loginOrgId;
+    }
+
+    public void setGraphql(Integer graphql) {
+        this.graphql = graphql;
+    }
+
+    public void setGrayTag(String grayTag) {
+        this.grayTag = grayTag;
+    }
+
+    public void setDynamicName(String dynamicName) {
+        this.dynamicName = dynamicName;
+    }
+
+    public void setSecretLevel(Integer secretLevel) {
+        this.secretLevel = secretLevel;
+    }
+
+    public void setSandBoxTag(String sandBoxTag) {
+        this.sandBoxTag = sandBoxTag;
+    }
+
+    public void setSourceAppName(String sourceAppName) {
+        this.sourceAppName = sourceAppName;
+    }
+
+    public void setCustomPassThrough(Map<String, String> customPassThrough) {
+        this.customPassThrough = customPassThrough;
+    }
+
+    public static RequestContext get() {
+        return LOCAL.get();
+    }
+
+    public static void clear() {
+        StackTraceElement[] stackTrace;
+        if (CommonLogProperties.getEnableConsoleStack().booleanValue() && (stackTrace = Thread.currentThread().getStackTrace()).length > 2) {
+            StackTraceElement caller = stackTrace[2];
+            log.info(String.format("Called by %s.%s (line %d)%n", caller.getClassName(), caller.getMethodName(), caller.getLineNumber()));
+        }
+        LOCAL.remove();
+    }
+
+    public static void destroy() {
+        LOCAL = null;
+    }
+
+    public Long getTenantId() {
+        return this.tenantId;
+    }
+
+    public String getTraceId() {
+        return this.traceId;
+    }
+
+    public String getClientIp() {
+        return this.clientIp;
+    }
+
+    public String getUserAgent() {
+        return this.userAgent;
+    }
+
+    public Long getLoginOrgId() {
+        return this.loginOrgId;
+    }
+
+    public Integer getGraphql() {
+        return this.graphql;
+    }
+
+    public String getGrayTag() {
+        return this.grayTag;
+    }
+
+    public String getDynamicName() {
+        return this.dynamicName;
+    }
+
+    public Integer getSecretLevel() {
+        return this.secretLevel;
+    }
+
+    public String getSandBoxTag() {
+        return this.sandBoxTag;
+    }
+
+    public String getSourceAppName() {
+        return this.sourceAppName;
+    }
+
+    public Map<String, String> getCustomPassThrough() {
+        return this.customPassThrough;
+    }
+}

@@ -1,0 +1,499 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  cn.hutool.core.io.resource.Resource
+ *  cn.hutool.core.io.resource.ResourceUtil
+ *  cn.hutool.core.util.StrUtil
+ *  com.google.common.base.Splitter
+ *  com.seeyon.boot.annotation.Maskable
+ *  com.seeyon.boot.annotation.enums.MaskType
+ *  com.seeyon.boot.context.Apps
+ *  net.sourceforge.pinyin4j.PinyinHelper
+ *  net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
+ *  net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
+ *  net.sourceforge.pinyin4j.format.HanyuPinyinToneType
+ *  net.sourceforge.pinyin4j.format.HanyuPinyinVCharType
+ *  net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination
+ *  net.sourceforge.pinyin4j.multipinyin.MultiPinyinConfig
+ *  org.apache.commons.io.FileUtils
+ *  org.apache.commons.lang3.StringUtils
+ *  org.apache.commons.text.StringEscapeUtils
+ *  org.springframework.util.StringUtils
+ */
+package com.seeyon.boot.util;
+
+import cn.hutool.core.io.resource.Resource;
+import cn.hutool.core.io.resource.ResourceUtil;
+import cn.hutool.core.util.StrUtil;
+import com.google.common.base.Splitter;
+import com.seeyon.boot.annotation.Maskable;
+import com.seeyon.boot.annotation.enums.MaskType;
+import com.seeyon.boot.context.Apps;
+import java.io.File;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+import net.sourceforge.pinyin4j.multipinyin.MultiPinyinConfig;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.StringEscapeUtils;
+
+public class StringUtils
+extends org.apache.commons.lang3.StringUtils {
+    private static final char UNDERLINE = '_';
+    private static int ONE_WORD_LEN = 1;
+    public static final long ONE_KB = 1024L;
+    public static final long ONE_MB = 0x100000L;
+    public static final long ONE_GB = 0x40000000L;
+    private static Pattern numPattern = Pattern.compile("^[+-]?[\\d]\\d*[.]?\\d*$");
+    private static Pattern mobilePattern = Pattern.compile("1\\d{10}");
+    private static Pattern bankCardPattern = Pattern.compile("[0-9]{19}");
+    private static Pattern emailPattern = Pattern.compile("[\\w.]+@[\\w.]+");
+    private static Pattern certNoPattern = Pattern.compile("([1-9][0-9]{5}(18|19|20)[0-9]{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)[0-9]{3}[0-9Xx])|([1-9][0-9]{5}[0-9]{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)[0-9]{3})");
+    private static final HanyuPinyinOutputFormat DEFAULT_FORMAT = new HanyuPinyinOutputFormat();
+
+    public static String first(String text) {
+        return StringUtils.left((String)text, (int)ONE_WORD_LEN);
+    }
+
+    public static String getSimpleNameFromFullName(String fullName) {
+        return fullName.substring(fullName.lastIndexOf(".") + 1);
+    }
+
+    public static String toPinYinFirstSpell(String str) {
+        if (StringUtils.isBlank((CharSequence)str)) {
+            return "";
+        }
+        String convert = "";
+        try {
+            for (int j = 0; j < str.length(); ++j) {
+                char word = str.charAt(j);
+                String[] pinyinArray = PinyinHelper.toHanyuPinyinStringArray((char)word);
+                if (pinyinArray != null) {
+                    convert = convert + pinyinArray[0].charAt(0);
+                    continue;
+                }
+                if (Character.toString(word).matches("[\\u4E00-\\u9FA5]+")) continue;
+                convert = convert + word;
+            }
+        }
+        catch (Exception exception) {
+            // empty catch block
+        }
+        return convert;
+    }
+
+    public static String toPinyin(String hanZi) {
+        if (StringUtils.isBlank((CharSequence)hanZi)) {
+            return null;
+        }
+        try {
+            return PinyinHelper.toHanYuPinyinString((String)hanZi, (HanyuPinyinOutputFormat)DEFAULT_FORMAT, (String)"", (boolean)true);
+        }
+        catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
+            return hanZi;
+        }
+    }
+
+    public static String toPinyinFistWord(String hanZi) {
+        if (StringUtils.isBlank((CharSequence)hanZi)) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (char c : hanZi.toCharArray()) {
+            String[] oneWord = PinyinHelper.toHanyuPinyinStringArray((char)c);
+            if (oneWord == null || oneWord.length <= 0) continue;
+            sb.append(oneWord[0].charAt(0));
+        }
+        return sb.toString();
+    }
+
+    public static String toPinyinFistLetter(String hanZi) {
+        return StringUtils.substring((String)StringUtils.toPinyinFistWord(hanZi), (int)0, (int)1);
+    }
+
+    public static String bigVersion(String appVersion) {
+        if (StringUtils.isBlank((CharSequence)appVersion) || StringUtils.contains((CharSequence)appVersion.toUpperCase(), (CharSequence)"SNAPSHOT")) {
+            return appVersion;
+        }
+        if (StringUtils.countMatches((CharSequence)appVersion, (CharSequence)".") <= 1) {
+            return appVersion;
+        }
+        return appVersion.substring(0, appVersion.lastIndexOf("."));
+    }
+
+    public static int compareVersion(String version1, String version2) {
+        version1.replaceAll("SINGLE", "SNAPSHOT");
+        version2.replaceAll("SINGLE", "SNAPSHOT");
+        if (StrUtil.equals((CharSequence)version1, (CharSequence)version2)) {
+            return 0;
+        }
+        String[] valueSplit1 = StrUtil.isNotBlank((CharSequence)version1) ? version1.split("[.]") : new String[]{};
+        String[] valueSplit2 = StrUtil.isNotBlank((CharSequence)version2) ? version2.split("[.]") : new String[]{};
+        int minLength = Math.min(valueSplit1.length, valueSplit2.length);
+        for (int i = 0; i < minLength; ++i) {
+            long value2;
+            long value1;
+            String s2;
+            int v2;
+            String vs1 = valueSplit1[i].replaceAll("[^0-9]", ",").split(",")[0];
+            if (null != vs1 && vs1.length() > 20) {
+                vs1 = vs1.substring(0, 20);
+            }
+            int v1 = Integer.parseInt(vs1);
+            String vs2 = valueSplit2[i].replaceAll("[^0-9]", ",").split(",")[0];
+            if (null != vs2 && vs2.length() > 20) {
+                vs2 = vs2.substring(0, 20);
+            }
+            if (v1 > (v2 = Integer.parseInt(vs2))) {
+                return 1;
+            }
+            if (v1 < v2) {
+                return -1;
+            }
+            String s1 = valueSplit1[i].replaceAll("[a-zA-Z\\-\\_]", "");
+            if (s1.length() > 20) {
+                s1 = s1.substring(0, 20);
+            }
+            if ((s2 = valueSplit2[i].replaceAll("[a-zA-Z\\-\\_]", "")).length() > 20) {
+                s2 = s2.substring(0, 20);
+            }
+            if ((value1 = Long.parseLong(s1)) > (value2 = Long.parseLong(s2))) {
+                return 1;
+            }
+            if (value1 < value2) {
+                return -1;
+            }
+            if (valueSplit1[i].toUpperCase().contains("SNAPSHOT") && valueSplit2[i].toUpperCase().contains("SNAPSHOT")) continue;
+            if (valueSplit1[i].toUpperCase().contains("SNAPSHOT")) {
+                return -1;
+            }
+            if (!valueSplit2[i].toUpperCase().contains("SNAPSHOT")) continue;
+            return 1;
+        }
+        return valueSplit1.length - valueSplit2.length;
+    }
+
+    public static String getMajorVersion(String version) {
+        if (StringUtils.isEmpty((CharSequence)version)) {
+            return "";
+        }
+        try {
+            int pos = version.indexOf(".");
+            pos = version.indexOf(".", pos + 1);
+            String majorVersion = version.substring(0, pos);
+            return majorVersion;
+        }
+        catch (Exception exception) {
+            return version;
+        }
+    }
+
+    public static String camelToUnderline(String param) {
+        if (param == null || "".equals(param.trim())) {
+            return "";
+        }
+        int len = param.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; ++i) {
+            char c = param.charAt(i);
+            if (Character.isUpperCase(c)) {
+                sb.append('_');
+                sb.append(Character.toLowerCase(c));
+                continue;
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    public static <T> T isBlankDefault(T text, T defaultValue) {
+        if (text == null) {
+            return defaultValue;
+        }
+        if (text.getClass().isAssignableFrom(String.class)) {
+            return StringUtils.isBlank((CharSequence)((String)text)) ? defaultValue : text;
+        }
+        return text;
+    }
+
+    public static boolean matcher(String regex, String value) {
+        if (value == null) {
+            return false;
+        }
+        Pattern p = Pattern.compile(regex);
+        return p.matcher(value).matches();
+    }
+
+    public static String mask(String text, int preSize, int postSize) {
+        return StringUtils.mask(text, preSize, postSize, Character.valueOf('*'));
+    }
+
+    public static String mask(String text, int preSize, int postSize, Character replaceChar) {
+        String source = StringUtils.trimToEmpty((String)text);
+        if (StringUtils.isBlank((CharSequence)source)) {
+            return text;
+        }
+        if (replaceChar == null) {
+            replaceChar = Character.valueOf('*');
+        }
+        if (preSize + postSize >= text.length()) {
+            return StringUtils.leftPad((String)"", (int)text.length(), (char)replaceChar.charValue());
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(StringUtils.leftPad((String)"", (int)preSize, (char)replaceChar.charValue()));
+        sb.append(StringUtils.substring((String)text, (int)preSize, (int)(text.length() - postSize)));
+        sb.append(StringUtils.leftPad((String)"", (int)postSize, (char)replaceChar.charValue()));
+        return sb.toString();
+    }
+
+    public static String maskUserName(String text) {
+        return StringUtils.maskReverse(text, 2, 1);
+    }
+
+    public static String maskBankCardNo(String text) {
+        return StringUtils.maskReverse(text, 4, 3);
+    }
+
+    public static String maskIdCardNo(String text) {
+        return StringUtils.maskReverse(text, 3, 4);
+    }
+
+    public static String maskMobileNo(String text) {
+        return StringUtils.maskReverse(text, 3, 4);
+    }
+
+    public static String maskEmail(String text) {
+        List parts;
+        if (StringUtils.isNotBlank((CharSequence)text) && StringUtils.contains((CharSequence)text, (CharSequence)"@") && (parts = Splitter.on((String)"@").omitEmptyStrings().splitToList((CharSequence)text)) != null && parts.size() == 2) {
+            return StringUtils.maskReverse((String)parts.get(0), 2, 0) + "@" + (String)parts.get(1);
+        }
+        return StringUtils.maskReverse(text, 2, 3);
+    }
+
+    public static String maskAuto(String str) {
+        if (str == null) {
+            return null;
+        }
+        int len = str.length();
+        if (len == 0) {
+            return str;
+        }
+        if (len == 1) {
+            return String.valueOf('*');
+        }
+        if ((len == 15 || len == 18) && StringUtils.isCertNo(str)) {
+            return StringUtils.maskIdCardNo(str);
+        }
+        if (len == 11 && StringUtils.isMobile(str)) {
+            return StringUtils.maskMobileNo(str);
+        }
+        if ((len >= 8 || len <= 11) && str.matches("[A-Z]{1,2}\\d{7,10}")) {
+            int begin = Character.isDigit(str.charAt(1)) ? 2 : 3;
+            int maskLen = len - begin - 3;
+            return StringUtils.maskReverse(str, begin, maskLen);
+        }
+        if ((len == 10 || len == 13) && str.matches("[A-Z]?\\d{8,10}(\\([A-Z]\\))?") && !str.matches("[0-9]{1,}$")) {
+            int begin = 2;
+            int maskLen = str.charAt(str.length() - 1) == ')' ? len - begin - 4 : len - begin - 1;
+            return StringUtils.maskReverse(str, begin, maskLen);
+        }
+        if (StringUtils.isBankCard(str)) {
+            return StringUtils.maskBankCardNo(str);
+        }
+        if (len > 3 && StringUtils.isEmail(str)) {
+            return StringUtils.maskEmail(str);
+        }
+        if (len < 16 || len > 22) {
+            if (len < 3) {
+                len = str.length();
+                int maskLen = Math.max(len / 2, 1);
+                int begin = (len - maskLen) / 2;
+                return StringUtils.mask(str, begin, maskLen);
+            }
+            return StringUtils.maskReverse(str, 1, 1);
+        }
+        int maskLen = len - 6 - 4;
+        int begin = 6;
+        return StringUtils.mask(str, begin, maskLen);
+    }
+
+    private static boolean isEmail(String str) {
+        return emailPattern.matcher(str).matches();
+    }
+
+    private static boolean isMobile(String str) {
+        return mobilePattern.matcher(str).matches();
+    }
+
+    private static boolean isCertNo(String str) {
+        return certNoPattern.matcher(str).matches();
+    }
+
+    private static boolean isBankCard(String str) {
+        return bankCardPattern.matcher(str).matches();
+    }
+
+    public static String maskByType(String data, Maskable maskable) {
+        if (maskable == null || maskable.type() == MaskType.None) {
+            return data;
+        }
+        if (maskable.type() == MaskType.Auto) {
+            return StringUtils.maskAuto(data);
+        }
+        if (maskable.type() == MaskType.All) {
+            return StringUtils.maskReverse(data, 0, 0);
+        }
+        return StringUtils.maskReverse(data, maskable.start(), maskable.end());
+    }
+
+    public static String maskReverse(String text, int start, int end) {
+        return StringUtils.maskReverse(text, start, end, Character.valueOf('*'));
+    }
+
+    public static String maskReverse(String text, int start, int end, Character replaceChar) {
+        return StringUtils.maskReverse(text, start, end, replaceChar, 0);
+    }
+
+    public static String maskReverse(String text, int start, int end, Character replaceChar, int maskLength) {
+        String source = StringUtils.trimToEmpty((String)text);
+        if (StringUtils.isBlank((CharSequence)source)) {
+            return source;
+        }
+        if (replaceChar == null) {
+            replaceChar = Character.valueOf('*');
+        }
+        if (start >= source.length() || end >= source.length() || source.length() - start - end < 0) {
+            return source;
+        }
+        int mLength = text.length() - start - end;
+        mLength = maskLength == 0 ? mLength : maskLength;
+        return StringUtils.left((String)text, (int)start) + StringUtils.leftPad((String)"", (int)mLength, (char)replaceChar.charValue()) + StringUtils.right((String)text, (int)end);
+    }
+
+    public static boolean isNumber(CharSequence cs) {
+        if (StringUtils.isEmpty((CharSequence)cs)) {
+            return false;
+        }
+        return numPattern.matcher(cs).matches();
+    }
+
+    public static boolean equals(String val1, String val2) {
+        if (val1 == null && val2 == null) {
+            return true;
+        }
+        if (val1 != null) {
+            return val1.equals(val2);
+        }
+        return val2.equals(val1);
+    }
+
+    public static String escapeJson(String str) {
+        return StringEscapeUtils.escapeJson((String)str);
+    }
+
+    public static String unescapeJson(String str) {
+        return StringEscapeUtils.unescapeJson((String)str);
+    }
+
+    public static String formatFileSize(long fileSize, boolean isUseMinValue) {
+        if (fileSize < 0L) {
+            throw new ArithmeticException("fileSize less than zero");
+        }
+        String result = "";
+        Locale locale = Locale.getDefault();
+        NumberFormat format = NumberFormat.getInstance(locale);
+        format.setMaximumFractionDigits(2);
+        format.setMinimumFractionDigits(0);
+        if (fileSize >= 0x40000000L) {
+            float filesize = (float)fileSize / new Long(0x40000000L).floatValue();
+            result = format.format(filesize) + " GB";
+        } else if (fileSize >= 0x100000L) {
+            float filesize = (float)fileSize / new Long(0x100000L).floatValue();
+            result = format.format(filesize) + " MB";
+        } else if (fileSize >= 1024L) {
+            float filesize = (float)fileSize / new Long(1024L).floatValue();
+            result = format.format(filesize) + " KB";
+        } else {
+            result = fileSize == 0L ? "0 KB" : (isUseMinValue ? "1 KB" : format.format(fileSize) + " B");
+        }
+        return result;
+    }
+
+    public static String getInjectBeanName(String classFullName, boolean containPackage) {
+        if (containPackage) {
+            return classFullName;
+        }
+        String beanName = classFullName.substring(classFullName.lastIndexOf(".") + 1);
+        return org.springframework.util.StringUtils.uncapitalize((String)beanName);
+    }
+
+    public static String decode(String s, String enc) throws UnsupportedEncodingException {
+        boolean needToChange = false;
+        int numChars = s.length();
+        StringBuffer sb = new StringBuffer(numChars > 500 ? numChars / 2 : numChars);
+        int i = 0;
+        if (enc.length() == 0) {
+            throw new UnsupportedEncodingException("URLDecoder: empty string enc parameter");
+        }
+        byte[] bytes = null;
+        block5: while (i < numChars) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '%': {
+                    try {
+                        if (bytes == null) {
+                            bytes = new byte[(numChars - i) / 3];
+                        }
+                        int pos = 0;
+                        while (i + 2 < numChars && c == '%') {
+                            int v = Integer.parseInt(s.substring(i + 1, i + 3), 16);
+                            if (v < 0) {
+                                throw new IllegalArgumentException("URLDecoder: Illegal hex characters in escape (%) pattern - negative value");
+                            }
+                            bytes[pos++] = (byte)v;
+                            if ((i += 3) >= numChars) continue;
+                            c = s.charAt(i);
+                        }
+                        if (i < numChars && c == '%') {
+                            throw new IllegalArgumentException("URLDecoder: Incomplete trailing escape (%) pattern");
+                        }
+                        sb.append(new String(bytes, 0, pos, enc));
+                    }
+                    catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("URLDecoder: Illegal hex characters in escape (%) pattern - " + e.getMessage());
+                    }
+                    needToChange = true;
+                    continue block5;
+                }
+            }
+            sb.append(c);
+            ++i;
+        }
+        return needToChange ? sb.toString() : s;
+    }
+
+    static {
+        try {
+            DEFAULT_FORMAT.setVCharType(HanyuPinyinVCharType.WITH_V);
+            DEFAULT_FORMAT.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+            DEFAULT_FORMAT.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+            File pinyinFile = new File(Apps.getAppTmpPath() + File.separator + "pinyin.txt");
+            Resource resourceObj = ResourceUtil.getResourceObj((String)"classpath:META-INF/pinyin.txt");
+            FileUtils.copyInputStreamToFile((InputStream)resourceObj.getStream(), (File)pinyinFile);
+            MultiPinyinConfig.multiPinyinPath = pinyinFile.getAbsolutePath();
+        }
+        catch (Throwable throwable) {
+            // empty catch block
+        }
+    }
+}

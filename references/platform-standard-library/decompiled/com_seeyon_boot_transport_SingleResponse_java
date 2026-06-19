@@ -1,0 +1,49 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.DtoAttribute
+ *  com.seeyon.boot.annotation.DtoInfo
+ *  com.seeyon.boot.transport.BaseResponse
+ *  com.seeyon.boot.transport.SingleData
+ */
+package com.seeyon.boot.transport;
+
+import com.seeyon.boot.annotation.DtoAttribute;
+import com.seeyon.boot.annotation.DtoInfo;
+import com.seeyon.boot.transport.BaseResponse;
+import com.seeyon.boot.transport.SingleData;
+
+@DtoInfo(value="\u54cd\u5e94\u5bf9\u8c61")
+public class SingleResponse<T>
+extends BaseResponse {
+    private static final long serialVersionUID = -7914940743622178880L;
+    @DtoAttribute(value="\u8fd4\u56de\u503c\u6570\u636e")
+    private SingleData<T> data;
+
+    public static <T> SingleResponse<T> from(T dto) {
+        SingleResponse<T> response = new SingleResponse<T>();
+        response.setData(SingleData.from(dto));
+        return response;
+    }
+
+    public static <T> SingleResponse<T> ok() {
+        SingleResponse<T> response = new SingleResponse<T>();
+        response.setData(null);
+        return response;
+    }
+
+    public static SingleResponse buildProcessingResponse() {
+        SingleResponse response = new SingleResponse();
+        response.setStatus(-1);
+        return response;
+    }
+
+    public SingleData<T> getData() {
+        return this.data;
+    }
+
+    public void setData(SingleData<T> data) {
+        this.data = data;
+    }
+}

@@ -1,0 +1,194 @@
+# External Contract Index configuration TEMPLATE ONLY
+# Runtime source of truth: config/external-indexes.yaml
+# Copy this file to config/external-indexes.yaml only when bootstrapping/resetting config.
+# Agents/scripts must read the runtime config, never this template.
+# Do NOT paste secrets or large Swagger/OpenAPI documents here.
+
+version: 2
+
+cache:
+  enabled: true
+  dir: references/facts/external-contracts/cache
+  ttl_seconds: 86400
+
+query_order:
+  - external_openapi
+  - external_mcp
+  - external_http
+  - local_doc_index
+  - local_jar_index
+  - targeted_jar_probe
+  - version_matrix
+
+# Capability names are defined in references/contract-index/capability-contract.md
+# Supported capabilities:
+#   search_symbol, search_method, resolve_operation, resolve_schema, resolve_artifact, probe_class
+# A source should only declare capabilities it actually supports. Use unsupported: true for explicit gaps.
+sources:
+  - id: seeyon-v8-openapi-local
+    type: openapi
+    enabled: false
+    specs:
+      - name: user-center
+        url: "http://127.0.0.1:8080/v3/api-docs/user-center"
+    auth:
+      type: none
+    capabilities:
+      resolve_operation:
+        supported: true
+      resolve_schema:
+        supported: true
+      search_symbol:
+        supported: true
+      search_method:
+        supported: true
+      resolve_artifact:
+        unsupported: true
+      probe_class:
+        unsupported: true
+
+  - id: customer-swagger
+    type: swagger
+    enabled: false
+    specs:
+      - name: default
+        url: "https://example.com/swagger/v1/swagger.json"
+    auth:
+      type: bearer
+      token_env: "CUSTOMER_SWAGGER_TOKEN"
+    capabilities:
+      resolve_operation:
+        supported: true
+      resolve_schema:
+        supported: true
+      search_symbol:
+        supported: true
+      search_method:
+        supported: true
+      resolve_artifact:
+        unsupported: true
+      probe_class:
+        unsupported: true
+
+  - id: seeyon-contract-mcp
+    type: mcp
+    enabled: false
+    server_name: "seeyon_contract"
+    # MCP tools differ by server. Map only the capabilities this MCP actually supports.
+    capabilities:
+      search_symbol:
+        tool: "mcp_seeyon_contract_search"
+        args_map:
+          symbol: "query"
+      search_method:
+        tool: "mcp_seeyon_contract_search"
+        args_map:
+          method: "query"
+          class_name: "className"
+      resolve_operation:
+        tool: "mcp_seeyon_contract_openapi_lookup"
+        args_map:
+          operation_id: "operationId"
+          path: "path"
+          http_method: "method"
+      resolve_schema:
+        tool: "mcp_seeyon_contract_schema_lookup"
+        args_map:
+          schema: "schemaName"
+      resolve_artifact:
+        tool: "mcp_seeyon_contract_resolve_artifact"
+        args_map:
+          artifact: "artifactId"
+          version: "version"
+      probe_class:
+        unsupported: true
+
+  - id: seeyon-yuque-v8-rendered-md
+    type: local_doc_index
+    enabled: true
+    path: "references/facts/yuque-v8-docs-rendered-md/docs"
+    manifest: "references/facts/yuque-v8-docs-rendered-md/manifest.json"
+    source_url: "https://www.yuque.com/seeyonkk/v8/"
+    note: "Seeyon V8 语雀本地 SPI 子集 rendered Markdown 索引（非全量）。Evidence 上限为 OBSERVATION；接口契约仍以 jar/源码/OpenAPI exact match 为 FACT。全量/指定 URL 用 references/facts/yuque-v8-docs-rendered-md/tools/yuque_fetch.py。"
+    capabilities:
+      search_symbol:
+        supported: true
+        adapter: "references/contract-index/tools/query_yuque_local_index.py"
+      search_method:
+        supported: true
+        adapter: "references/contract-index/tools/query_yuque_local_index.py"
+      resolve_operation:
+        supported: true
+        adapter: "references/contract-index/tools/query_yuque_local_index.py"
+      resolve_schema:
+        supported: true
+        adapter: "references/contract-index/tools/query_yuque_local_index.py"
+      resolve_artifact:
+        unsupported: true
+      probe_class:
+        unsupported: true
+
+  - id: internal-doc-index
+    type: http
+    enabled: false
+    base_url: "https://docs.example.com/api"
+    auth:
+      type: bearer
+      token_env: "DOC_INDEX_TOKEN"
+    capabilities:
+      search_symbol:
+        method: GET
+        path: "/search"
+        query_map:
+          symbol: "q"
+      search_method:
+        method: GET
+        path: "/search"
+        query_map:
+          method: "q"
+          class_name: "class"
+      resolve_artifact:
+        method: GET
+        path: "/artifacts/resolve"
+        query_map:
+          artifact: "artifactId"
+          version: "version"
+      resolve_operation:
+        unsupported: true
+      resolve_schema:
+        unsupported: true
+      probe_class:
+        unsupported: true
+
+local_jar_index:
+  enabled: true
+  registry: references/facts/jar-contracts/registry.jsonl
+  capabilities:
+    search_symbol:
+      supported: true
+    search_method:
+      supported: true
+    resolve_artifact:
+      supported: true
+    resolve_operation:
+      unsupported: true
+    resolve_schema:
+      unsupported: true
+    probe_class:
+      unsupported: true
+
+targeted_jar_probe:
+  enabled: true
+  capabilities:
+    probe_class:
+      supported: true
+    search_method:
+      supported: true
+    search_symbol:
+      unsupported: true
+    resolve_operation:
+      unsupported: true
+    resolve_schema:
+      unsupported: true
+    resolve_artifact:
+      unsupported: true

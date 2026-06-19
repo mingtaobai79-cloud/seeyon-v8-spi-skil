@@ -1,0 +1,35 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.annotation.enums.MaskType
+ *  com.seeyon.boot.transport.BaseDto
+ */
+package com.seeyon.boot.starter.web.json;
+
+import com.seeyon.boot.annotation.enums.MaskType;
+import com.seeyon.boot.transport.BaseDto;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MaskableDto
+extends BaseDto {
+    private Map<String, MaskType> maskTypeMap;
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public void addMaskType(String fieldName, MaskType maskType) {
+        MaskableDto maskableDto = this;
+        synchronized (maskableDto) {
+            if (this.maskTypeMap == null) {
+                this.maskTypeMap = new HashMap<String, MaskType>();
+            }
+            this.maskTypeMap.put(fieldName, maskType);
+        }
+    }
+
+    public Map<String, MaskType> maskType() {
+        return this.maskTypeMap;
+    }
+}

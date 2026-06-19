@@ -1,0 +1,240 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.context.Apps
+ *  com.seeyon.boot.exception.BootException
+ *  com.seeyon.boot.util.StringUtils
+ *  org.apache.commons.lang3.ClassUtils
+ */
+package com.seeyon.boot.context;
+
+import com.seeyon.boot.context.Apps;
+import com.seeyon.boot.exception.BootException;
+import com.seeyon.boot.util.StringUtils;
+import java.util.Map;
+import org.apache.commons.lang3.ClassUtils;
+
+public enum SystemEnvironment {
+    prod,
+    pre,
+    performance,
+    test,
+    dev,
+    demo,
+    local,
+    unKnow;
+
+    private static SystemEnvironment currSystemEnvironment;
+    private static String currEnvStr;
+    private static String envNameSpace;
+    private static final String EVN_PROFILE_KEY = "SPRING_PROFILES_ACTIVE";
+    private static final String SANDBOX_KEY = "seeyon.sandbox";
+    public static final String ENV_NAME = "evn";
+    public static final String ENV_KEY = "mark";
+    public static final String SANDBOX_TYPE_SINGLE = "single";
+    public static final String SANDBOX_TYPE_MICRO = "micro";
+    public static final String SANDBOX_TYPE_MICRO_ONLINE = "micro-online";
+    public static Boolean isLocalRunFlag;
+    private static String sandboxType;
+    private static String grayTag;
+    private static final Map<String, String> mgnEnvMapping;
+    private static final Map<String, String> mgnEnvRelationMapping;
+
+    public static String getEnv() {
+        if (currEnvStr == null) {
+            currEnvStr = System.getProperty("spring.profiles.active");
+            if (currEnvStr == null) {
+                currEnvStr = System.getenv(EVN_PROFILE_KEY);
+            }
+            if (currEnvStr != null) {
+                try {
+                    currSystemEnvironment = SystemEnvironment.valueOf(currEnvStr);
+                }
+                catch (IllegalArgumentException e) {
+                    currSystemEnvironment = unKnow;
+                }
+            } else {
+                BootException.throwIt((String)"\u6ca1\u6709\u914d\u7f6e\u53c2\u6570spring.profiles.active");
+            }
+        }
+        return currEnvStr;
+    }
+
+    public static String getEnvNameSpace() {
+        if (envNameSpace == null) {
+            String namespace = System.getProperty("seeyon.env.namespace");
+            envNameSpace = StringUtils.isNotBlank((CharSequence)namespace) ? namespace : (StringUtils.isNotBlank((CharSequence)(namespace = Apps.getEnvironment().getProperty("seeyon.env.namespace", ""))) ? namespace : "seeyon-" + SystemEnvironment.getEnv());
+        }
+        return envNameSpace;
+    }
+
+    public static boolean isProd() {
+        return SystemEnvironment.is(prod);
+    }
+
+    public static boolean isPre() {
+        return SystemEnvironment.is(pre);
+    }
+
+    public static boolean isPerformance() {
+        return SystemEnvironment.is(performance);
+    }
+
+    public static boolean isTest() {
+        return SystemEnvironment.is(test);
+    }
+
+    public static boolean isDev() {
+        return SystemEnvironment.is(dev);
+    }
+
+    public static boolean isLocal() {
+        return SystemEnvironment.is(local);
+    }
+
+    public static boolean isDemo() {
+        return SystemEnvironment.is(demo);
+    }
+
+    public static boolean is(SystemEnvironment env) {
+        if (env == null) {
+            BootException.throwIt((String)"env\u4e0d\u80fd\u4e3a\u7a7a");
+        }
+        if (currSystemEnvironment == null) {
+            try {
+                currSystemEnvironment = SystemEnvironment.valueOf(SystemEnvironment.getEnv());
+            }
+            catch (IllegalArgumentException e) {
+                currSystemEnvironment = unKnow;
+                return false;
+            }
+        }
+        return env == currSystemEnvironment;
+    }
+
+    public static boolean isExclusiveStorage() {
+        return "true".equals(Apps.getEnvironment().getProperty("seeyon.enableExclusive"));
+    }
+
+    public static boolean isAutoCreateTables() {
+        if ("true".equals(Apps.getEnvironment().getProperty("seeyon.enableExclusive"))) {
+            return false;
+        }
+        if (SystemEnvironment.isLocal()) {
+            if ("true".equals(Apps.getEnvironment().getProperty("seeyon.datainit.auto"))) {
+                return false;
+            }
+            System.setProperty("seeyon.datainit.auto", "false");
+            return true;
+        }
+        String dataInit = Apps.getEnvironment().getProperty("seeyon.datainit.auto", "true");
+        return "false".equals(dataInit) && !SystemEnvironment.isPre() && !SystemEnvironment.isProd();
+    }
+
+    public static boolean isAutoCreateComponentTables() {
+        return !SystemEnvironment.isPre() && !SystemEnvironment.isProd();
+    }
+
+    public static boolean isEnableSwagger() {
+        String enable = StringUtils.defaultString((String)Apps.getEnvironment().getProperty("seeyon.swagger.enable"), (String)"false");
+        if (SystemEnvironment.isProd()) {
+            enable = "false";
+        }
+        return "true".equals(enable);
+    }
+
+    public boolean isOneOfEnvMode(SystemEnvironment ... values) {
+        for (SystemEnvironment e : values) {
+            if (this != e) continue;
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isSandbox() {
+        return !"".equals(SystemEnvironment.getSandboxType());
+    }
+
+    public static boolean isHostSandbox() {
+        return SANDBOX_TYPE_MICRO.equals(SystemEnvironment.getSandboxType());
+    }
+
+    public static String getSandboxType() {
+        if (sandboxType == null) {
+            try {
+                ClassUtils.getClass((String)"com.seeyon.app.sandboxserver.SandboxServer");
+                if (!Apps.isMonolithic()) {
+                    sandboxType = SANDBOX_TYPE_MICRO;
+                }
+            }
+            catch (Throwable throwable) {
+                // empty catch block
+            }
+            String isSandbox = Apps.getEnvironment().getProperty(SANDBOX_KEY, "false");
+            if ("true".equals(isSandbox)) {
+                sandboxType = SANDBOX_TYPE_MICRO_ONLINE;
+            }
+            if (sandboxType == null) {
+                sandboxType = "";
+            }
+        }
+        return sandboxType;
+    }
+
+    public static String getGrayTag() {
+        if (null == grayTag) {
+            grayTag = Apps.getEnvironment().getProperty("seeyon.gray.tag", "");
+        }
+        return grayTag;
+    }
+
+    public static String getMgnEnv() {
+        String env = Apps.getEnvironment().getProperty("seeyon.environment.currentEnv", "");
+        if (StringUtils.isNotEmpty((CharSequence)env)) {
+            String mgnEnv = mgnEnvMapping.get(env);
+            if (StringUtils.isEmpty((CharSequence)mgnEnv)) {
+                return "";
+            }
+            return mgnEnv;
+        }
+        return Apps.getEnvironment().getProperty("seeyon.mgn.env", "");
+    }
+
+    public static String getMgnRelation() {
+        String envStr = Apps.getEnvironment().getProperty("seeyon.environment.deploymentEnvStr", "");
+        if (StringUtils.isNotEmpty((CharSequence)envStr)) {
+            String mgnEnvStr = mgnEnvRelationMapping.get(envStr);
+            if (StringUtils.isEmpty((CharSequence)mgnEnvStr)) {
+                return null;
+            }
+            return mgnEnvStr;
+        }
+        return Apps.getEnvironment().getProperty("seeyon.mgn.relation", "");
+    }
+
+    public static boolean isGray() {
+        return StringUtils.isNotBlank((CharSequence)SystemEnvironment.getGrayTag());
+    }
+
+    public static boolean isLocalRun() {
+        if (isLocalRunFlag == null) {
+            String localEnable = Apps.getEnvironment().getProperty("local.enable");
+            if (StringUtils.isEmpty((CharSequence)localEnable)) {
+                localEnable = "true";
+            }
+            String localValue = Apps.getEnvironment().getProperty("local.value");
+            isLocalRunFlag = "true".equals(localEnable) && StringUtils.isNotEmpty((CharSequence)localValue) ? Boolean.valueOf(true) : Boolean.valueOf(false);
+        }
+        return isLocalRunFlag;
+    }
+
+    static {
+        currSystemEnvironment = null;
+        currEnvStr = null;
+        envNameSpace = null;
+        isLocalRunFlag = null;
+        mgnEnvMapping = new /* Unavailable Anonymous Inner Class!! */;
+        mgnEnvRelationMapping = new /* Unavailable Anonymous Inner Class!! */;
+    }
+}

@@ -1,0 +1,196 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.exception.BusinessException
+ *  com.seeyon.boot.util.bean.AbstractPrimitiveUtils
+ *  com.seeyon.boot.util.bean.BeanUtils$PropertyGetterSetter
+ *  javassist.ClassClassPath
+ *  javassist.ClassPath
+ *  javassist.ClassPool
+ *  javassist.CtClass
+ *  javassist.CtMethod
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ *  org.springframework.util.StringUtils
+ */
+package com.seeyon.boot.util.bean;
+
+import com.seeyon.boot.exception.BusinessException;
+import com.seeyon.boot.util.bean.AbstractPrimitiveUtils;
+import com.seeyon.boot.util.bean.BeanUtils;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import javassist.ClassClassPath;
+import javassist.ClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
+
+public class BeanUtils {
+    private static final Logger log = LoggerFactory.getLogger(BeanUtils.class);
+    private static final Map<String, PropertyGetterSetter> CACHE = new ConcurrentHashMap<String, PropertyGetterSetter>();
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public static Object getFieldValue(Object data, String fieldName) {
+        if (data == null || !StringUtils.hasText((String)fieldName)) {
+            BusinessException exception = new BusinessException("BOOT_1001");
+            exception.addError("data or fieldName is invalid");
+            throw exception;
+        }
+        Class<?> clazz = data.getClass();
+        String className = clazz.getName();
+        String key = className + "." + fieldName;
+        PropertyGetterSetter getter = CACHE.get(key);
+        if (getter == null) {
+            Class<?> clazz2 = clazz;
+            synchronized (clazz2) {
+                getter = CACHE.get(key);
+                if (getter == null) {
+                    BeanUtils.generateGetterSetter(clazz, fieldName);
+                    getter = CACHE.get(key);
+                }
+            }
+        }
+        return getter.getValue(data);
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public static void setFieldValue(Object data, String fieldName, Object fieldValue) {
+        if (data == null || !StringUtils.hasText((String)fieldName)) {
+            BusinessException exception = new BusinessException("BOOT_1001");
+            exception.addError("data or fieldName is invalid");
+            throw exception;
+        }
+        Class<?> clazz = data.getClass();
+        String className = clazz.getName();
+        String key = className + "." + fieldName;
+        PropertyGetterSetter setter = CACHE.get(key);
+        if (setter == null) {
+            Class<?> clazz2 = clazz;
+            synchronized (clazz2) {
+                setter = CACHE.get(key);
+                if (setter == null) {
+                    BeanUtils.generateGetterSetter(clazz, fieldName);
+                    setter = CACHE.get(key);
+                }
+            }
+        }
+        setter.setValue(data, fieldValue);
+    }
+
+    private static void generateGetterSetter(Class clazz, String fieldName) {
+        String key = clazz.getName() + "." + fieldName;
+        String getterName = BeanUtils.getterName(fieldName);
+        String setterName = BeanUtils.setterName(fieldName);
+        Field field = null;
+        try {
+            field = clazz.getDeclaredField(fieldName);
+        }
+        catch (NoSuchFieldException e) {
+            BusinessException exception = new BusinessException("BOOT_1001");
+            exception.addError("Field('" + fieldName + "') is not found in the class[" + clazz.getName() + "]");
+            throw exception;
+        }
+        try {
+            clazz.getDeclaredMethod(getterName, new Class[0]);
+        }
+        catch (NoSuchMethodException e) {
+            BusinessException exception = new BusinessException("BOOT_1001");
+            exception.addError("Method('" + getterName + " or " + setterName + "') is not found in the class[" + clazz.getName() + "]");
+            throw exception;
+        }
+        boolean primitive = field.getType().isPrimitive();
+        String fieldClassName = field.getType().getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append("public Object getValue(Object data) {");
+        if (primitive) {
+            sb.append("    Object obj = " + AbstractPrimitiveUtils.class.getName() + ".value(((" + clazz.getName() + ") data)." + getterName + "());");
+        } else {
+            sb.append("    Object obj = ((" + clazz.getName() + ") data)." + getterName + "();");
+        }
+        sb.append("    return obj;");
+        sb.append("}");
+        StringBuilder setterSBuilder = new StringBuilder();
+        setterSBuilder.append("public void setValue(Object data, Object val) {");
+        if (primitive) {
+            setterSBuilder.append("    ((" + clazz.getName() + ") data)." + setterName + "(" + AbstractPrimitiveUtils.class.getName() + ".value((" + AbstractPrimitiveUtils.getWrapperClass((String)fieldClassName).getName() + ") val));");
+        } else {
+            setterSBuilder.append("    ((" + clazz.getName() + ") data)." + setterName + "((" + fieldClassName + ") val);");
+        }
+        setterSBuilder.append("}");
+        ClassPool pool = ClassPool.getDefault();
+        ClassClassPath classPath = new ClassClassPath(PropertyGetterSetter.class);
+        pool.insertClassPath((ClassPath)classPath);
+        int appendix = key.hashCode();
+        if (appendix < 0) {
+            appendix = -appendix;
+        }
+        CtClass cc = pool.makeClass("com.seeyon.boot.util.bean.BeanUtils.PropertyGetterSetter" + appendix);
+        Class callerClass = null;
+        try {
+            cc.addInterface(pool.get(PropertyGetterSetter.class.getName()));
+            CtMethod gm = CtMethod.make((String)sb.toString(), (CtClass)cc);
+            cc.addMethod(gm);
+            CtMethod sm = CtMethod.make((String)setterSBuilder.toString(), (CtClass)cc);
+            cc.addMethod(sm);
+            ClassLoader classLoader = BeanUtils.getDefaultClassLoader();
+            callerClass = cc.toClass(classLoader, null);
+        }
+        catch (Exception e) {
+            log.error("\u521b\u5efa\u52a8\u6001\u7c7b\u5931\u8d25,\u6570\u636e\u7c7b:" + clazz.getName() + ",\u6570\u636e\u5b57\u6bb5:" + fieldName);
+            throw new BusinessException("BOOT_5000", (Throwable)e);
+        }
+        try {
+            PropertyGetterSetter instance = (PropertyGetterSetter)callerClass.newInstance();
+            CACHE.put(key, instance);
+        }
+        catch (Exception e) {
+            log.error("\u5b9e\u4f8b\u5316\u52a8\u6001\u7c7b\u5931\u8d25,\u6570\u636e\u7c7b:" + clazz.getName() + ",\u6570\u636e\u5b57\u6bb5:" + fieldName);
+            throw new BusinessException("BOOT_5000", (Throwable)e);
+        }
+    }
+
+    private static ClassLoader getDefaultClassLoader() {
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+        catch (Throwable throwable) {
+            // empty catch block
+        }
+        if (cl == null && (cl = PropertyGetterSetter.class.getClassLoader()) == null) {
+            try {
+                cl = ClassLoader.getSystemClassLoader();
+            }
+            catch (Throwable throwable) {
+                // empty catch block
+            }
+        }
+        return cl;
+    }
+
+    private static String getterName(String fieldName) {
+        return "get" + BeanUtils.firstCharUpperCase(fieldName);
+    }
+
+    private static String setterName(String fieldName) {
+        return "set" + BeanUtils.firstCharUpperCase(fieldName);
+    }
+
+    private static String firstCharUpperCase(String str) {
+        StringBuilder sb = new StringBuilder(str);
+        if (Character.isLowerCase(sb.charAt(0)) && (sb.length() == 1 || !Character.isUpperCase(sb.charAt(1)))) {
+            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
+        }
+        return sb.toString();
+    }
+}

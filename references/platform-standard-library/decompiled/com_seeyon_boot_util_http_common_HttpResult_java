@@ -1,0 +1,73 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  org.apache.http.Header
+ *  org.apache.http.HttpResponse
+ *  org.apache.http.ProtocolVersion
+ *  org.apache.http.StatusLine
+ */
+package com.seeyon.boot.util.http.common;
+
+import java.io.Serializable;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+
+public class HttpResult
+implements Serializable {
+    private static final long serialVersionUID = -6368281080581808792L;
+    private String result;
+    private int statusCode;
+    private StatusLine statusLine;
+    private Header[] reqHeaders;
+    private Header[] respHeaders;
+    private ProtocolVersion protocolVersion;
+    private HttpResponse resp;
+
+    public HttpResult(HttpResponse resp) {
+        this.statusLine = resp.getStatusLine();
+        this.respHeaders = resp.getAllHeaders();
+        this.protocolVersion = resp.getProtocolVersion();
+        this.statusCode = resp.getStatusLine().getStatusCode();
+        this.resp = resp;
+    }
+
+    public Header getHeaders(String name) {
+        Header[] headers = this.resp.getHeaders(name);
+        return headers != null && headers.length > 0 ? headers[0] : null;
+    }
+
+    public String getResult() {
+        return this.result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public int getStatusCode() {
+        return this.statusCode;
+    }
+
+    public StatusLine getStatusLine() {
+        return this.statusLine;
+    }
+
+    public void setReqHeaders(Header[] reqHeaders) {
+        this.reqHeaders = reqHeaders;
+    }
+
+    public Header[] getRespHeaders() {
+        return this.respHeaders;
+    }
+
+    public ProtocolVersion getProtocolVersion() {
+        return this.protocolVersion;
+    }
+
+    public HttpResponse getResp() {
+        return this.resp;
+    }
+}

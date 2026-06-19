@@ -1,0 +1,447 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.fasterxml.jackson.annotation.JsonInclude$Include
+ *  com.fasterxml.jackson.core.JsonGenerator$Feature
+ *  com.fasterxml.jackson.core.JsonParser$Feature
+ *  com.fasterxml.jackson.core.JsonProcessingException
+ *  com.fasterxml.jackson.databind.DeserializationFeature
+ *  com.fasterxml.jackson.databind.JavaType
+ *  com.fasterxml.jackson.databind.JsonDeserializer
+ *  com.fasterxml.jackson.databind.JsonNode
+ *  com.fasterxml.jackson.databind.JsonSerializer
+ *  com.fasterxml.jackson.databind.Module
+ *  com.fasterxml.jackson.databind.PropertyNamingStrategy
+ *  com.fasterxml.jackson.databind.SerializationFeature
+ *  com.fasterxml.jackson.databind.module.SimpleModule
+ *  com.fasterxml.jackson.databind.node.ArrayNode
+ *  com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+ *  com.fasterxml.jackson.databind.type.TypeBindings
+ *  com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+ *  com.seeyon.boot.enums.Messageable
+ *  com.seeyon.boot.util.SeeyonObjectMapper
+ *  com.seeyon.boot.util.StringUtils
+ *  com.seeyon.boot.util.serialize.DateStrFormat
+ *  com.seeyon.boot.util.serialize.EnumJsonDeserializer
+ *  com.seeyon.boot.util.serialize.EnumJsonSerializer
+ *  com.seeyon.boot.util.serialize.EnumToCodeSerializer
+ *  com.seeyon.boot.util.serialize.SeeyonPropertyNamingStrategy
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.databind.type.TypeBindings;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.seeyon.boot.enums.Messageable;
+import com.seeyon.boot.util.SeeyonObjectMapper;
+import com.seeyon.boot.util.StringUtils;
+import com.seeyon.boot.util.serialize.DateStrFormat;
+import com.seeyon.boot.util.serialize.EnumJsonDeserializer;
+import com.seeyon.boot.util.serialize.EnumJsonSerializer;
+import com.seeyon.boot.util.serialize.EnumToCodeSerializer;
+import com.seeyon.boot.util.serialize.SeeyonPropertyNamingStrategy;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class JsonUtils {
+    private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
+    private static final int MAX_LOG_LENGTH = 50000;
+    private static SeeyonObjectMapper mapper = new SeeyonObjectMapper();
+    private static SeeyonObjectMapper originMapper;
+    private static SeeyonObjectMapper notIncludeNullMapper;
+    private static SeeyonObjectMapper processNumberMapper;
+    private static SeeyonObjectMapper enumToCodeMapper;
+
+    public static void main(String[] args) {
+        BigDecimal bigDecimal = new BigDecimal("100.000").stripTrailingZeros();
+        System.out.println(JsonUtils.toJsonLongToString(bigDecimal));
+    }
+
+    public static String toJsonThrowError(Object object) throws Exception {
+        if (object == null) {
+            return null;
+        }
+        return mapper.writeValueAsString(object);
+    }
+
+    public static String toJson(Object object) {
+        try {
+            return JsonUtils.toJsonThrowError(object);
+        }
+        catch (Exception e) {
+            log.warn("write to json string error:" + object, (Throwable)e);
+            return null;
+        }
+    }
+
+    public static String toJsonEnumToCode(Object object) {
+        if (object == null) {
+            return null;
+        }
+        try {
+            return enumToCodeMapper.writeValueAsString(object);
+        }
+        catch (Exception e) {
+            log.warn("write to json string error:" + object, (Throwable)e);
+            return null;
+        }
+    }
+
+    public static String toJson(Object object, boolean longToString) {
+        if (longToString) {
+            return JsonUtils.toJsonLongToString(object);
+        }
+        return JsonUtils.toJson(object);
+    }
+
+    public static String toJsonLongToString(Object object) {
+        if (object == null) {
+            return null;
+        }
+        try {
+            return processNumberMapper.writeValueAsString(object);
+        }
+        catch (Exception e) {
+            log.warn("write to json string error:" + object, (Throwable)e);
+            return null;
+        }
+    }
+
+    public static String toJsonDecimalToString(Object object) {
+        if (object == null) {
+            return null;
+        }
+        try {
+            return processNumberMapper.writeValueAsString(object);
+        }
+        catch (Exception e) {
+            log.warn("write to json string error:" + object, (Throwable)e);
+            return null;
+        }
+    }
+
+    public static String toJsonNotIncludeNull(Object object) {
+        if (object == null) {
+            return null;
+        }
+        try {
+            return notIncludeNullMapper.writeValueAsString(object);
+        }
+        catch (Exception e) {
+            log.warn("write to json string error:" + object, (Throwable)e);
+            return null;
+        }
+    }
+
+    public static <T> T fromJson(String jsonString, Class<T> clazz) {
+        try {
+            return JsonUtils.fromJsonThrowError(jsonString, clazz);
+        }
+        catch (Exception e) {
+            log.warn("parse json string error:" + StringUtils.substring((String)jsonString, (int)0, (int)50000), (Throwable)e);
+            return null;
+        }
+    }
+
+    public static <T> T fromJsonThrowError(String jsonString, Class<T> clazz) throws Exception {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return null;
+        }
+        return JsonUtils.readValue(jsonString, clazz);
+    }
+
+    public static <T> T fromJsonThrowError(String jsonString, Class<T> clazz, Class generalClazz) throws Exception {
+        if (generalClazz == null) {
+            return JsonUtils.fromJsonThrowError(jsonString, clazz);
+        }
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return null;
+        }
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(clazz, new Class[]{generalClazz});
+        return JsonUtils.readValue(jsonString, javaType);
+    }
+
+    public static <T> T fromJson(String jsonString, Class<T> clazz, Class generalClazz) {
+        try {
+            return JsonUtils.fromJsonThrowError(jsonString, clazz, generalClazz);
+        }
+        catch (Exception e) {
+            log.warn("parse json string error:" + StringUtils.substring((String)jsonString, (int)0, (int)50000), (Throwable)e);
+            return null;
+        }
+    }
+
+    public static <T> T fromJson(String jsonString, Class<T> clazz, Class generalClazz, Class subGeneralClazz) {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return null;
+        }
+        try {
+            JavaType javaType0 = mapper.getTypeFactory().constructParametricType(generalClazz, new Class[]{subGeneralClazz});
+            JavaType javaType = mapper.getTypeFactory().constructParametricType(clazz, new JavaType[]{javaType0});
+            return JsonUtils.readValue(jsonString, javaType);
+        }
+        catch (IOException e) {
+            log.warn("parse json string error:" + StringUtils.substring((String)jsonString, (int)0, (int)50000), (Throwable)e);
+            return null;
+        }
+    }
+
+    public static Map<String, String> toStringMapThrowError(String jsonString) throws Exception {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return Collections.emptyMap();
+        }
+        HashMap<String, String> jsonMap = new HashMap<String, String>();
+        JsonNode jsonNode = mapper.readTree(jsonString);
+        jsonNode.fieldNames().forEachRemaining(name -> jsonMap.put((String)name, jsonNode.get(name).isTextual() ? jsonNode.get(name).textValue() : jsonNode.get(name).toString()));
+        return jsonMap;
+    }
+
+    public static Map<String, String> toStringMap(String jsonString) {
+        try {
+            return JsonUtils.toStringMapThrowError(jsonString);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static <K, V> Map<K, V> toMapThrowError(String jsonString, Class<K> keyClass, Class<V> valueClass) throws Exception {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return Collections.emptyMap();
+        }
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(LinkedHashMap.class, new Class[]{keyClass, valueClass});
+        return (Map)JsonUtils.readValue(jsonString, javaType);
+    }
+
+    public static <K, V> Map<K, V> toMap(String jsonString, Class<K> keyClass, Class<V> valueClass) {
+        try {
+            return JsonUtils.toMapThrowError(jsonString, keyClass, valueClass);
+        }
+        catch (Exception e) {
+            log.warn("parse json string error:" + StringUtils.substring((String)jsonString, (int)0, (int)50000), (Throwable)e);
+            return null;
+        }
+    }
+
+    public static Map<String, Object> toMapThrowError(String jsonString) throws Exception {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return Collections.emptyMap();
+        }
+        return JsonUtils.readValue(jsonString, Map.class);
+    }
+
+    public static Map<String, Object> toMap(String jsonString) {
+        try {
+            return JsonUtils.toMapThrowError(jsonString);
+        }
+        catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static List<String> toStringList(String jsonString) {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return Collections.emptyList();
+        }
+        ArrayList<String> jsonList = new ArrayList<String>();
+        try {
+            ArrayNode arrayNode = (ArrayNode)mapper.readTree(jsonString);
+            for (JsonNode node : arrayNode) {
+                jsonList.add(node.toString());
+            }
+        }
+        catch (Exception e) {
+            log.warn("{}, parse json string error: {}", (Object)e.getMessage(), (Object)StringUtils.substring((String)jsonString, (int)0, (int)50000));
+            return null;
+        }
+        return jsonList;
+    }
+
+    public static List toListThrowError(String jsonString) throws Exception {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return Collections.emptyList();
+        }
+        return JsonUtils.readValue(jsonString, List.class);
+    }
+
+    public static List toList(String jsonString) {
+        try {
+            return JsonUtils.toListThrowError(jsonString);
+        }
+        catch (Exception e) {
+            log.warn("{}, parse json string error: {}", (Object)e.getMessage(), (Object)StringUtils.substring((String)jsonString, (int)0, (int)50000));
+            return null;
+        }
+    }
+
+    public static <T> List<T> toListThrowError(String jsonString, Class<T> clazz) throws Exception {
+        if (StringUtils.isEmpty((CharSequence)jsonString)) {
+            return Collections.emptyList();
+        }
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(List.class, new Class[]{clazz});
+        return (List)JsonUtils.readValue(jsonString, javaType);
+    }
+
+    public static <T> List<T> toList(String jsonString, Class<T> clazz) {
+        try {
+            return JsonUtils.toListThrowError(jsonString, clazz);
+        }
+        catch (Exception e) {
+            log.warn("parse json string error:" + StringUtils.substring((String)jsonString, (int)0, (int)50000), (Throwable)e);
+            return null;
+        }
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    private static <T> T readValue(String content, JavaType valueType) throws JsonProcessingException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        TypeBindings typeBindings = valueType.getBindings();
+        Thread.currentThread().setContextClassLoader(typeBindings.getBoundType(typeBindings.size() - 1).getRawClass().getClassLoader());
+        try {
+            Object object = mapper.readValue(content, valueType);
+            return (T)object;
+        }
+        catch (Throwable t) {
+            Object object = originMapper.readValue(content, valueType);
+            return (T)object;
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(classLoader);
+        }
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    private static <T> T readValue(String content, Class<T> valueType) throws JsonProcessingException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(valueType.getClassLoader());
+        try {
+            Object object = mapper.readValue(content, valueType);
+            return (T)object;
+        }
+        catch (Throwable t) {
+            Object object = originMapper.readValue(content, valueType);
+            return (T)object;
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(classLoader);
+        }
+    }
+
+    public static void clearCache(int classloaderHashCode) {
+        processNumberMapper.clearCache(classloaderHashCode);
+        mapper.clearCache(classloaderHashCode);
+        originMapper.clearCache(classloaderHashCode);
+        notIncludeNullMapper.clearCache(classloaderHashCode);
+        enumToCodeMapper.clearCache(classloaderHashCode);
+    }
+
+    static {
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.enable(new JsonGenerator.Feature[]{JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN});
+        mapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        mapper.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
+        mapper.configure(DeserializationFeature.ACCEPT_FLOAT_AS_INT, false);
+        mapper.setPropertyNamingStrategy((PropertyNamingStrategy)new SeeyonPropertyNamingStrategy());
+        mapper.setDateFormat((DateFormat)new DateStrFormat());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        mapper.registerModule((Module)new JavaTimeModule());
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(Messageable.class, (JsonSerializer)new EnumJsonSerializer());
+        simpleModule.addSerializer(LocalDateTime.class, (JsonSerializer)new /* Unavailable Anonymous Inner Class!! */);
+        simpleModule.addDeserializer(Enum.class, (JsonDeserializer)new EnumJsonDeserializer());
+        mapper.registerModule((Module)simpleModule);
+        mapper.setTimeZone(TimeZone.getDefault());
+        enumToCodeMapper = new SeeyonObjectMapper();
+        enumToCodeMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        enumToCodeMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        enumToCodeMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        enumToCodeMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        enumToCodeMapper.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
+        enumToCodeMapper.configure(DeserializationFeature.ACCEPT_FLOAT_AS_INT, false);
+        enumToCodeMapper.setPropertyNamingStrategy((PropertyNamingStrategy)new SeeyonPropertyNamingStrategy());
+        SimpleModule simpleModule1 = new SimpleModule();
+        simpleModule1.addSerializer(Messageable.class, (JsonSerializer)new EnumToCodeSerializer());
+        enumToCodeMapper.registerModule((Module)simpleModule1);
+        enumToCodeMapper.setTimeZone(TimeZone.getDefault());
+        originMapper = new SeeyonObjectMapper();
+        originMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        originMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        originMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        originMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        originMapper.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
+        originMapper.configure(DeserializationFeature.ACCEPT_FLOAT_AS_INT, false);
+        originMapper.setPropertyNamingStrategy((PropertyNamingStrategy)new SeeyonPropertyNamingStrategy());
+        originMapper.setTimeZone(TimeZone.getDefault());
+        processNumberMapper = new SeeyonObjectMapper();
+        processNumberMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        processNumberMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        processNumberMapper.enable(new JsonGenerator.Feature[]{JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN});
+        processNumberMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        processNumberMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        processNumberMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        processNumberMapper.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
+        processNumberMapper.configure(DeserializationFeature.ACCEPT_FLOAT_AS_INT, false);
+        processNumberMapper.setPropertyNamingStrategy((PropertyNamingStrategy)new SeeyonPropertyNamingStrategy());
+        processNumberMapper.setDateFormat((DateFormat)new DateStrFormat());
+        processNumberMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Long.class, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Long.TYPE, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Double.class, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Double.TYPE, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Float.class, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Float.TYPE, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Short.class, (JsonSerializer)ToStringSerializer.instance);
+        module.addSerializer(Short.TYPE, (JsonSerializer)ToStringSerializer.instance);
+        processNumberMapper.registerModule((Module)module);
+        processNumberMapper.setTimeZone(TimeZone.getDefault());
+        processNumberMapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
+        notIncludeNullMapper = new SeeyonObjectMapper();
+        notIncludeNullMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        notIncludeNullMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        notIncludeNullMapper.configure(DeserializationFeature.ACCEPT_FLOAT_AS_INT, false);
+        notIncludeNullMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        notIncludeNullMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        notIncludeNullMapper.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, true);
+        notIncludeNullMapper.setPropertyNamingStrategy((PropertyNamingStrategy)new SeeyonPropertyNamingStrategy());
+        notIncludeNullMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        notIncludeNullMapper.setDateFormat((DateFormat)new DateStrFormat());
+        notIncludeNullMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        notIncludeNullMapper.setTimeZone(TimeZone.getDefault());
+    }
+}

@@ -1,0 +1,865 @@
+[
+  {
+    "title": "V8知识大纲进度跟踪表",
+    "slug": "mhhl2p4uxo8fdp08",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/mhhl2p4uxo8fdp08",
+    "local_file": "docs/0001-V8知识大纲进度跟踪表-mhhl2p4uxo8fdp08.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "开发准备",
+    "slug": "fqdmdrodt7x7p6no",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/fqdmdrodt7x7p6no",
+    "local_file": "docs/0002-开发准备-fqdmdrodt7x7p6no.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "nacos开关",
+    "slug": "lw1x44oiovko3ybv",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/lw1x44oiovko3ybv",
+    "local_file": "docs/0005-nacos开关-lw1x44oiovko3ybv.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "日志扩展",
+    "slug": "vu83q687l6skhpk9",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/vu83q687l6skhpk9",
+    "local_file": "docs/0012-日志扩展-vu83q687l6skhpk9.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "标品加密解密方式",
+    "slug": "zwbttbrk98ndv9mu",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/zwbttbrk98ndv9mu",
+    "local_file": "docs/0014-标品加密解密方式-zwbttbrk98ndv9mu.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "MQ组件",
+    "slug": "hs96yt55xze6xydg",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hs96yt55xze6xydg",
+    "local_file": "docs/0015-MQ组件-hs96yt55xze6xydg.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "Nacos和应用参数获取方式",
+    "slug": "lzbghrhioxhhd31r",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/lzbghrhioxhhd31r",
+    "local_file": "docs/0016-Nacos和应用参数获取方式-lzbghrhioxhhd31r.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "Dubbo接口说明",
+    "slug": "dubbo",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/dubbo",
+    "local_file": "docs/0020-Dubbo接口说明-dubbo.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-08-15 10:38"
+  },
+  {
+    "title": "公式组件(暂不支持扩展)",
+    "slug": "vcvg1gny9rp8tplv",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/vcvg1gny9rp8tplv",
+    "local_file": "docs/0021-公式组件(暂不支持扩展)-vcvg1gny9rp8tplv.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "平台技术白皮书",
+    "slug": "khioi6tyczlxno45",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/khioi6tyczlxno45",
+    "local_file": "docs/0022-平台技术白皮书-khioi6tyczlxno45.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-05-29 19:16"
+  },
+  {
+    "title": "后端常用方法",
+    "slug": "yh43gpiq9beh16xd",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/yh43gpiq9beh16xd",
+    "local_file": "docs/0023-后端常用方法-yh43gpiq9beh16xd.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "工程结构",
+    "slug": "zy37084h3lxylfy9",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/zy37084h3lxylfy9",
+    "local_file": "docs/0056-工程结构-zy37084h3lxylfy9.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-04-27 16:54"
+  },
+  {
+    "title": "接口规范",
+    "slug": "wpinkgn5ggfwmkta",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/wpinkgn5ggfwmkta",
+    "local_file": "docs/0058-接口规范-wpinkgn5ggfwmkta.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-04-27 16:54"
+  },
+  {
+    "title": "MQ消息规范",
+    "slug": "vdlfzwdaafl67yr9",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/vdlfzwdaafl67yr9",
+    "local_file": "docs/0066-MQ消息规范-vdlfzwdaafl67yr9.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-04-27 16:54"
+  },
+  {
+    "title": "Rest规范",
+    "slug": "lkrzaod5edg33r8k",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/lkrzaod5edg33r8k",
+    "local_file": "docs/0067-Rest规范-lkrzaod5edg33r8k.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-07-16 17:43"
+  },
+  {
+    "title": "平台页面js/css/jssdk扩展",
+    "slug": "fch83t5fwntnm4zy",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/fch83t5fwntnm4zy",
+    "local_file": "docs/0077-平台页面js_css_jssdk扩展-fch83t5fwntnm4zy.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-09-12 10:49"
+  },
+  {
+    "title": "扩展插槽",
+    "slug": "zngrgup351qls4gv",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/zngrgup351qls4gv",
+    "local_file": "docs/0082-扩展插槽-zngrgup351qls4gv.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "自定义行为扩展",
+    "slug": "vfs0bxnr8msg4152",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/vfs0bxnr8msg4152",
+    "local_file": "docs/0083-自定义行为扩展-vfs0bxnr8msg4152.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "SPI扩展",
+    "slug": "nizgyacv5x4oh0wh",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/nizgyacv5x4oh0wh",
+    "local_file": "docs/0085-SPI扩展-nizgyacv5x4oh0wh.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "三方事项栏目自动刷新",
+    "slug": "zyxzukrgg38n6svy",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/zyxzukrgg38n6svy",
+    "local_file": "docs/0089-三方事项栏目自动刷新-zyxzukrgg38n6svy.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "批处理三方待办事项",
+    "slug": "gonq0zusief36hit",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/gonq0zusief36hit",
+    "local_file": "docs/0090-批处理三方待办事项-gonq0zusief36hit.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "自定义租户、机构登录人数控制",
+    "slug": "lbtxv6th0m01v9im",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/lbtxv6th0m01v9im",
+    "local_file": "docs/0092-自定义租户、机构登录人数控制-lbtxv6th0m01v9im.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "登录扩展",
+    "slug": "ix6conpzm43saumy",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ix6conpzm43saumy",
+    "local_file": "docs/0094-登录扩展-ix6conpzm43saumy.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "菜单导航添加三方菜单",
+    "slug": "ingocx5774cym2xs",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ingocx5774cym2xs",
+    "local_file": "docs/0095-菜单导航添加三方菜单-ingocx5774cym2xs.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "ticket认证返回人员信息自定义",
+    "slug": "pazygl1cot73gavl",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/pazygl1cot73gavl",
+    "local_file": "docs/0096-ticket认证返回人员信息自定义-pazygl1cot73gavl.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "登录前门户",
+    "slug": "np2eldavkvhybzzy",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/np2eldavkvhybzzy",
+    "local_file": "docs/0098-登录前门户-np2eldavkvhybzzy.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "公文扩展接口",
+    "slug": "ss8h88xen6x2al43",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ss8h88xen6x2al43",
+    "local_file": "docs/0099-公文扩展接口-ss8h88xen6x2al43.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "事项中心流程扩展",
+    "slug": "bykkpxgxntm6cltm",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/bykkpxgxntm6cltm",
+    "local_file": "docs/0100-事项中心流程扩展-bykkpxgxntm6cltm.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "注册中心",
+    "slug": "qc6siuqr3xa5ti0c",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/qc6siuqr3xa5ti0c",
+    "local_file": "docs/0101-注册中心-qc6siuqr3xa5ti0c.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "配置中心",
+    "slug": "etln83yguiz4k0pd",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/etln83yguiz4k0pd",
+    "local_file": "docs/0102-配置中心-etln83yguiz4k0pd.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "MQ扩展",
+    "slug": "qii2f3ybtoq43pnz",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/qii2f3ybtoq43pnz",
+    "local_file": "docs/0103-MQ扩展-qii2f3ybtoq43pnz.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "上传下载文件扩展",
+    "slug": "ibmhcc3391u12fsg",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ibmhcc3391u12fsg",
+    "local_file": "docs/0104-上传下载文件扩展-ibmhcc3391u12fsg.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "散列加密",
+    "slug": "htbbndul0hfirkdu",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/htbbndul0hfirkdu",
+    "local_file": "docs/0105-散列加密-htbbndul0hfirkdu.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "对称加密",
+    "slug": "wqgtvw7hlnaqwage",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/wqgtvw7hlnaqwage",
+    "local_file": "docs/0106-对称加密-wqgtvw7hlnaqwage.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "系统变量扩展",
+    "slug": "xynmcgh1igvh01n2",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/xynmcgh1igvh01n2",
+    "local_file": "docs/0107-系统变量扩展-xynmcgh1igvh01n2.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2026-06-08T09:21:47.000Z"
+  },
+  {
+    "title": "认证系统接入",
+    "slug": "uevxy4zvbfi6bs11",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/uevxy4zvbfi6bs11",
+    "local_file": "docs/0108-认证系统接入-uevxy4zvbfi6bs11.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "三方单点到V8",
+    "slug": "v8-ctp-user-api-ctpavoidloginmiddlepageproviderservice",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/v8-ctp-user-api-ctpavoidloginmiddlepageproviderservice",
+    "local_file": "docs/0109-三方单点到V8-v8-ctp-user-api-ctpavoidloginmiddlepageproviderservice.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "V8单点到三方",
+    "slug": "v8-cip-connector-api-ssoservice",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/v8-cip-connector-api-ssoservice",
+    "local_file": "docs/0110-V8单点到三方-v8-cip-connector-api-ssoservice.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "V8接入三方App",
+    "slug": "rx8blahmz6zt2u4d",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/rx8blahmz6zt2u4d",
+    "local_file": "docs/0111-V8接入三方App-rx8blahmz6zt2u4d.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "集成接口鉴权",
+    "slug": "nks3s8agdgi1im3z",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/nks3s8agdgi1im3z",
+    "local_file": "docs/0112-集成接口鉴权-nks3s8agdgi1im3z.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "文件操作",
+    "slug": "hl17w2x7p9wu11t0",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hl17w2x7p9wu11t0",
+    "local_file": "docs/0113-文件操作-hl17w2x7p9wu11t0.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "能力通道扩展",
+    "slug": "glpgswl2kflo5850",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/glpgswl2kflo5850",
+    "local_file": "docs/0114-能力通道扩展-glpgswl2kflo5850.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "数据源扩展",
+    "slug": "wkew2iynh3d3rauh",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/wkew2iynh3d3rauh",
+    "local_file": "docs/0115-数据源扩展-wkew2iynh3d3rauh.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "组织同步中间表扩展",
+    "slug": "wthi6ignkwu033ok",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/wthi6ignkwu033ok",
+    "local_file": "docs/0116-组织同步中间表扩展-wthi6ignkwu033ok.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "AI",
+    "slug": "ai",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ai",
+    "local_file": "docs/0135-AI-ai.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "短信",
+    "slug": "smsproviderservice",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/smsproviderservice",
+    "local_file": "docs/0136-短信-smsproviderservice.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "电子邮件",
+    "slug": "lonl0sev2do5sswq",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/lonl0sev2do5sswq",
+    "local_file": "docs/0137-电子邮件-lonl0sev2do5sswq.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "在线文档",
+    "slug": "hnoy0cnu8t5rl97o",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hnoy0cnu8t5rl97o",
+    "local_file": "docs/0138-在线文档-hnoy0cnu8t5rl97o.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "WPS配置及常见问题",
+    "slug": "rw2kc8wvokon654l",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/rw2kc8wvokon654l",
+    "local_file": "docs/0139-WPS配置及常见问题-rw2kc8wvokon654l.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "版式文档",
+    "slug": "dygyzew5otosm4pc",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/dygyzew5otosm4pc",
+    "local_file": "docs/0140-版式文档-dygyzew5otosm4pc.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "智能文档",
+    "slug": "cz2vt0hclv76regl",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/cz2vt0hclv76regl",
+    "local_file": "docs/0141-智能文档-cz2vt0hclv76regl.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "合合",
+    "slug": "xq1twzblp4640vob",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/xq1twzblp4640vob",
+    "local_file": "docs/0142-合合-xq1twzblp4640vob.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "简历解析",
+    "slug": "gdzts8d29pbzxcvf",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/gdzts8d29pbzxcvf",
+    "local_file": "docs/0143-简历解析-gdzts8d29pbzxcvf.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "OCR识别",
+    "slug": "ocr",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ocr",
+    "local_file": "docs/0144-OCR识别-ocr.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "视频会议",
+    "slug": "ivwplr4wwg33w8sp",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/ivwplr4wwg33w8sp",
+    "local_file": "docs/0145-视频会议-ivwplr4wwg33w8sp.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "商旅服务",
+    "slug": "shortl2okuort02z",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/shortl2okuort02z",
+    "local_file": "docs/0146-商旅服务-shortl2okuort02z.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "企业征信",
+    "slug": "sgtn67nnga2dei8l",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/sgtn67nnga2dei8l",
+    "local_file": "docs/0147-企业征信-sgtn67nnga2dei8l.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "启信宝",
+    "slug": "lf6ug4tttyywm7fg",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/lf6ug4tttyywm7fg",
+    "local_file": "docs/0148-启信宝-lf6ug4tttyywm7fg.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "发票服务",
+    "slug": "dsbmug3v87eqheii",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/dsbmug3v87eqheii",
+    "local_file": "docs/0149-发票服务-dsbmug3v87eqheii.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "物理印章",
+    "slug": "guror8p6i1x1srye",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/guror8p6i1x1srye",
+    "local_file": "docs/0150-物理印章-guror8p6i1x1srye.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "电子签章",
+    "slug": "kmkvpvbvzpsnyp1k",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/kmkvpvbvzpsnyp1k",
+    "local_file": "docs/0151-电子签章-kmkvpvbvzpsnyp1k.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-07-14 11:13"
+  },
+  {
+    "title": "翻译服务",
+    "slug": "hi342ylk3b8ghz3r",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hi342ylk3b8ghz3r",
+    "local_file": "docs/0152-翻译服务-hi342ylk3b8ghz3r.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "天气预报",
+    "slug": "sunh9n2l44py9s08",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/sunh9n2l44py9s08",
+    "local_file": "docs/0153-天气预报-sunh9n2l44py9s08.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "天气查询",
+    "slug": "gs3o2l75fd8kkfd2",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/gs3o2l75fd8kkfd2",
+    "local_file": "docs/0154-天气查询-gs3o2l75fd8kkfd2.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "GIS服务",
+    "slug": "gis",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/gis",
+    "local_file": "docs/0155-GIS服务-gis.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "地理位置",
+    "slug": "sr99gd076pshgxip",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/sr99gd076pshgxip",
+    "local_file": "docs/0156-地理位置-sr99gd076pshgxip.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "离线消息",
+    "slug": "qhix1g6uzquoy08a",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/qhix1g6uzquoy08a",
+    "local_file": "docs/0157-离线消息-qhix1g6uzquoy08a.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "离线消息配置",
+    "slug": "xgzdb06lbk09z1gv",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/xgzdb06lbk09z1gv",
+    "local_file": "docs/0158-离线消息配置-xgzdb06lbk09z1gv.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "标签打印",
+    "slug": "by4kq17m1o7br277",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/by4kq17m1o7br277",
+    "local_file": "docs/0159-标签打印-by4kq17m1o7br277.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "银企直连",
+    "slug": "xkoabytfxo4xdzg2",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/xkoabytfxo4xdzg2",
+    "local_file": "docs/0160-银企直连-xkoabytfxo4xdzg2.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "全文检索",
+    "slug": "xrw76qgaotqc0gvv",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/xrw76qgaotqc0gvv",
+    "local_file": "docs/0161-全文检索-xrw76qgaotqc0gvv.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "语音技术",
+    "slug": "gx3fls0f39yvk5lq",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/gx3fls0f39yvk5lq",
+    "local_file": "docs/0162-语音技术-gx3fls0f39yvk5lq.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "移动日程",
+    "slug": "hby563h7pvqaacgb",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hby563h7pvqaacgb",
+    "local_file": "docs/0163-移动日程-hby563h7pvqaacgb.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "档案系统",
+    "slug": "doa9ya5tvl6btiuq",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/doa9ya5tvl6btiuq",
+    "local_file": "docs/0164-档案系统-doa9ya5tvl6btiuq.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "人脸识别",
+    "slug": "hzsivn6xp8eca6ii",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hzsivn6xp8eca6ii",
+    "local_file": "docs/0165-人脸识别-hzsivn6xp8eca6ii.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "敏感词",
+    "slug": "hng30tufn8fktv7i",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/hng30tufn8fktv7i",
+    "local_file": "docs/0166-敏感词-hng30tufn8fktv7i.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "在线支付",
+    "slug": "rusz6cfbw81h67ty",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/rusz6cfbw81h67ty",
+    "local_file": "docs/0167-在线支付-rusz6cfbw81h67ty.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "3.15之前的版本扩展代码如何构建",
+    "slug": "zcormguidgprgedl",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/zcormguidgprgedl",
+    "local_file": "docs/0183-3.15之前的版本扩展代码如何构建-zcormguidgprgedl.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-07-29 16:00"
+  },
+  {
+    "title": "扩展代码-添加菜单",
+    "slug": "yuihf5rrtk0qs1kl",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/yuihf5rrtk0qs1kl",
+    "local_file": "docs/0188-扩展代码-添加菜单-yuihf5rrtk0qs1kl.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-07-29 14:39"
+  },
+  {
+    "title": "BPM平台",
+    "slug": "vhkpt9byr8p32zy3",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/vhkpt9byr8p32zy3",
+    "local_file": "docs/0193-BPM平台-vhkpt9byr8p32zy3.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "BPM功能扩展",
+    "slug": "bpm",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/bpm",
+    "local_file": "docs/0195-BPM功能扩展-bpm.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-08-27 17:58"
+  },
+  {
+    "title": "流程触发方法",
+    "slug": "bf8agor08ia7u045",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/bf8agor08ia7u045",
+    "local_file": "docs/0196-流程触发方法-bf8agor08ia7u045.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py",
+    "updated": "2025-10-16 16:54"
+  },
+  {
+    "title": "流程按钮扩展行为",
+    "slug": "xuimob9dd26fwdb6",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/xuimob9dd26fwdb6",
+    "local_file": "docs/0197-流程按钮扩展行为-xuimob9dd26fwdb6.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "正文组件技术说明文档",
+    "slug": "zfbeqyeoyh6x5onl",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/zfbeqyeoyh6x5onl",
+    "local_file": "docs/0199-正文组件技术说明文档-zfbeqyeoyh6x5onl.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  },
+  {
+    "title": "正文自定义事件操作步骤",
+    "slug": "cyxo4l4xfenm0cyz",
+    "remote_url": "https://www.yuque.com/seeyonkk/v8/cyxo4l4xfenm0cyz",
+    "local_file": "docs/0200-正文自定义事件操作步骤-cyxo4l4xfenm0cyz.md",
+    "evidence": "OBSERVATION",
+    "source": "yuque-seeyonkk-v8",
+    "local_scope": "spi-subset",
+    "remote_lookup": "tools/yuque_fetch.py"
+  }
+]

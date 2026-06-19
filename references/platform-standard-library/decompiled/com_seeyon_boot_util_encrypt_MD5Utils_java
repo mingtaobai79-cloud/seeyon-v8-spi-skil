@@ -1,0 +1,75 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.seeyon.boot.exception.BusinessException
+ *  org.bouncycastle.util.encoders.Hex
+ *  org.slf4j.Logger
+ *  org.slf4j.LoggerFactory
+ */
+package com.seeyon.boot.util.encrypt;
+
+import com.seeyon.boot.exception.BusinessException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.locks.ReentrantLock;
+import org.bouncycastle.util.encoders.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class MD5Utils {
+    private static final Logger log = LoggerFactory.getLogger(MD5Utils.class);
+    private static MessageDigest md = null;
+    private static ReentrantLock opLock = new ReentrantLock();
+
+    public static String md5(String src) {
+        return MD5Utils.md5(src, 32);
+    }
+
+    public static String md5(String src, int length) {
+        opLock.lock();
+        try {
+            String returnValue = "";
+            String outStr = Hex.toHexString((byte[])md.digest(src.getBytes("UTF-8")));
+            switch (length) {
+                case 16: {
+                    returnValue = outStr.substring(8, 24);
+                    break;
+                }
+                default: {
+                    returnValue = outStr;
+                }
+            }
+            String string = returnValue;
+            return string;
+        }
+        catch (Exception e) {
+            throw new BusinessException("BOOT_2100", (Throwable)e);
+        }
+        finally {
+            opLock.unlock();
+        }
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     * Enabled force condition propagation
+     * Lifted jumps to return sites
+     */
+    static {
+        Class<MD5Utils> clazz = MD5Utils.class;
+        synchronized (MD5Utils.class) {
+            if (md != null) return;
+            Class<MD5Utils> clazz2 = MD5Utils.class;
+            synchronized (MD5Utils.class) {
+                try {
+                    md = MessageDigest.getInstance("MD5");
+                }
+                catch (NoSuchAlgorithmException e) {
+                    log.error("init md digest error", (Throwable)e);
+                }
+                return;
+            }
+        }
+    }
+}
